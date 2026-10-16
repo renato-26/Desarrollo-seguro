@@ -1,7 +1,7 @@
 <?php
 
 include("setup/setup.php");
-session_start();
+require_once __DIR__ . '/setup/sesion_segura.php';
 
 switch($_POST['op'])
 {
