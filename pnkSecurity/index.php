@@ -30,10 +30,29 @@ if (
 $key = (int) $key;
 $_SESSION['id'] = $key;
 
-$sql_restorant="SELECT direcciones.calle, direcciones.numero, direcciones.comuna, direcciones.region, restautantes.nombre, restautantes.id, restautantes.fono, restautantes.email, restautantes.foto FROM restautantes INNER JOIN direcciones ON restautantes.direcciones_id =
-direcciones.id WHERE restautantes.id = ".$key." AND restautantes.eliminado IS NULL";
-$result_restorant=mysqli_query(conectar(),$sql_restorant);
-$datos_restorant=mysqli_fetch_array($result_restorant);
+$con = conectar();
+
+$sql_restorant = "SELECT direcciones.calle,
+                         direcciones.numero,
+                         direcciones.comuna,
+                         direcciones.region,
+                         restautantes.nombre,
+                         restautantes.id,
+                         restautantes.fono,
+                         restautantes.email,
+                         restautantes.foto
+                  FROM restautantes
+                  INNER JOIN direcciones
+                    ON restautantes.direcciones_id = direcciones.id
+                  WHERE restautantes.id = ?
+                    AND restautantes.eliminado IS NULL";
+
+$stmt_restorant = mysqli_prepare($con, $sql_restorant);
+mysqli_stmt_bind_param($stmt_restorant, "i", $key);
+mysqli_stmt_execute($stmt_restorant);
+
+$result_restorant = mysqli_stmt_get_result($stmt_restorant);
+$datos_restorant = mysqli_fetch_array($result_restorant);
 
 
 
@@ -167,9 +186,37 @@ $datos_restorant=mysqli_fetch_array($result_restorant);
   </section>
   <!--DESTACADOS-->
   <?php
-  $sql="SELECT items.id,items.visible,items.tiempo,items.puntuacion,items.destacado, items.precio, items.descripcion,items.observaciones, items.nombre, items.foto, items.orden, cartas.restautantes_id, categorias.visible FROM categorias INNER JOIN items ON items.categorias_id = categorias.id INNER JOIN cartas ON categorias.cartas_id = cartas.id
-  WHERE items.destacado = 1 AND items.eliminado IS NULL AND items.visible=1 AND cartas.restautantes_id = ".$key." AND cartas.eliminada IS NULL AND categorias.visible = 1 AND categorias.eliminado IS NULL";
-  $result=mysqli_query(conectar(),$sql);
+$sql = "SELECT items.id,
+               items.visible,
+               items.tiempo,
+               items.puntuacion,
+               items.destacado,
+               items.precio,
+               items.descripcion,
+               items.observaciones,
+               items.nombre,
+               items.foto,
+               items.orden,
+               cartas.restautantes_id,
+               categorias.visible
+        FROM categorias
+        INNER JOIN items
+            ON items.categorias_id = categorias.id
+        INNER JOIN cartas
+            ON categorias.cartas_id = cartas.id
+        WHERE items.destacado = 1
+          AND items.eliminado IS NULL
+          AND items.visible = 1
+          AND cartas.restautantes_id = ?
+          AND cartas.eliminada IS NULL
+          AND categorias.visible = 1
+          AND categorias.eliminado IS NULL";
+
+$stmt_destacados = mysqli_prepare($con, $sql);
+mysqli_stmt_bind_param($stmt_destacados, "i", $key);
+mysqli_stmt_execute($stmt_destacados);
+
+$result = mysqli_stmt_get_result($stmt_destacados);
   $cont_destacados=mysqli_num_rows($result);
   if( $cont_destacados!=0)
   {
@@ -248,9 +295,23 @@ $datos_restorant=mysqli_fetch_array($result_restorant);
                   <nav>
                     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
                         <?php
-                            $sqlcartas="SELECT cartas.id,cartas.restautantes_id,cartas.nombre,cartas.orden,cartas.visible FROM cartas WHERE cartas.restautantes_id = ".$key." and visible=1 AND eliminada IS NULL order by orden asc";
-                            $resultcartas=mysqli_query(conectar(),$sqlcartas);
-                            $arraycartas=[];
+                            $sqlcartas = "SELECT cartas.id,
+                                                cartas.restautantes_id,
+                                                cartas.nombre,
+                                                cartas.orden,
+                                                cartas.visible
+                                        FROM cartas
+                                        WHERE cartas.restautantes_id = ?
+                                          AND visible = 1
+                                          AND eliminada IS NULL
+                                        ORDER BY orden ASC";
+
+                            $stmt_cartas = mysqli_prepare($con, $sqlcartas);
+                            mysqli_stmt_bind_param($stmt_cartas, "i", $key);
+                            mysqli_stmt_execute($stmt_cartas);
+
+                            $resultcartas = mysqli_stmt_get_result($stmt_cartas);
+                            $arraycartas = [];
                             while($cartas=mysqli_fetch_array($resultcartas))
                             {
                               array_push($arraycartas, [
@@ -430,8 +491,15 @@ if(isset($key))
           <br>
           <?php
 
-            $sqlcomentarios="select * from comentarios where id_restaurante=".$key;
-            $resultcomentarios=mysqli_query(conectar(),$sqlcomentarios);
+            $sqlcomentarios = "SELECT *
+                               FROM comentarios
+                               WHERE id_restaurante = ?";
+
+            $stmt_comentarios = mysqli_prepare($con, $sqlcomentarios);
+            mysqli_stmt_bind_param($stmt_comentarios, "i", $key);
+            mysqli_stmt_execute($stmt_comentarios);
+
+            $resultcomentarios = mysqli_stmt_get_result($stmt_comentarios);
             while($datoscomentarios=mysqli_fetch_array($resultcomentarios))
             {
           ?>
