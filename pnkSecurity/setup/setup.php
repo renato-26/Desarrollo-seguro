@@ -1,5 +1,30 @@
 <?php
 
+// VUL-05: Evitar la divulgación de información interna mediante errores.
+error_reporting(E_ALL);
+
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+ini_set('log_errors', '1');
+
+set_exception_handler(function (Throwable $e) {
+    // Registrar únicamente información técnica mínima en el log interno.
+    error_log(
+        '[pnkSecurity] Excepcion no controlada: ' .
+        get_class($e) .
+        ' en ' .
+        basename($e->getFile()) .
+        ':' .
+        $e->getLine()
+    );
+
+    if (!headers_sent()) {
+        http_response_code(500);
+    }
+
+    exit('Ocurrió un error interno. Intente nuevamente más tarde.');
+});
+
 function conectar()
 {
     $con=mysqli_connect("localhost","root","","pnk_security");
