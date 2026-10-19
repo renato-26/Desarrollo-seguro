@@ -34,9 +34,9 @@ if ($email !== '' && $password !== '') {
     mysqli_stmt_close($stmt);
 }
 
-// Comparación TEMPORAL en texto plano, hecha en PHP y fuera del SQL.
-// Se reemplazará por password_verify() en VUL-07.
-if ($datos && hash_equals((string) $datos['password'], $password)) {
+// VUL-07: la contraseña se verifica contra el hash almacenado con password_hash().
+// password_verify() compara de forma segura; la contraseña nunca se guarda en texto plano.
+if ($datos && password_verify($password, (string) $datos['password'])) {
     $_SESSION['nombre'] = $datos['nombre'];
 }
 
