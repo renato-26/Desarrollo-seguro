@@ -10,7 +10,7 @@ if (!isset($_SESSION['nombre'])) {
     exit('Acceso no autorizado');
 }
 
-switch($_POST['op'])
+switch($_POST['op'] ?? '')
 {
     case "1": insertar();
         break;
@@ -22,14 +22,34 @@ switch($_POST['op'])
 
 function insertar()
 {
-    $_SESSION["carrito"];
-    $sql="select id, nombre, precio from items where id=".$_POST['iditems'];
-    $result=mysqli_query(conectar(),$sql);
-    $datos=mysqli_fetch_array($result);
+    // VUL-10: el identificador debe ser un entero positivo; cualquier otro valor se rechaza.
+    $id = filter_var($_POST['iditems'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($id === false || $id === null) {
+        http_response_code(400);
+        exit('Producto no valido');
+    }
 
-    $pos=count($_SESSION["carrito"])+1;
-    $productos = array("posicion"=>$pos,"id" => $datos['id'], "nombre" =>$datos['nombre'],"precio"=>$datos['precio']);
-    $_SESSION["carrito"][$pos] = $productos;
+    // VUL-10: consulta preparada. El id viaja como parametro y nombre/precio
+    // se obtienen desde la base de datos, nunca desde valores del navegador.
+    $con  = conectar();
+    $stmt = mysqli_prepare($con, 'SELECT id, nombre, precio FROM items WHERE id = ? LIMIT 1');
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    mysqli_stmt_execute($stmt);
+    $datos = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    mysqli_stmt_close($stmt);
+
+    if (!$datos) {
+        http_response_code(404);
+        exit('Producto no encontrado');
+    }
+
+    if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
+        $_SESSION['carrito'] = [];
+    }
+
+    $pos = count($_SESSION['carrito']) + 1;
+    $productos = array("posicion" => $pos, "id" => $datos['id'], "nombre" => $datos['nombre'], "precio" => $datos['precio']);
+    $_SESSION['carrito'][$pos] = $productos;
 }
 
 function eliminaritems()
