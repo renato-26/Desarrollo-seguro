@@ -505,9 +505,9 @@ if(isset($key))
           ?>
           <div class="card bg-light">
             <div class="card-body">
-              <b><?php echo $datoscomentarios['usuario'];?></b>
+              <b><?php echo textoSeguro($datoscomentarios['usuario']); ?></b>
               <br>
-              <?php echo $datoscomentarios['comentario'];?>
+              <?php echo textoSeguro($datoscomentarios['comentario']); ?>
             </div>
           </div>
           <br>
