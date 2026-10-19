@@ -17,16 +17,26 @@ if ($idRestaurante === false) {
     $idRestaurante = 1;
 }
 
-// Consulta original.
-// PENDIENTE VUL-08: reemplazar por consulta preparada.
-$sql = "select * from usuarios where email='".$_POST['frmusuario']."' and password='".$_POST['frmpassword']."'";
+// VUL-08: consulta preparada. Los datos del formulario se envían como
+// parámetros y nunca se concatenan al SQL, por lo que no alteran la consulta.
+$email    = trim((string) ($_POST['frmusuario'] ?? ''));
+$password = (string) ($_POST['frmpassword'] ?? '');
 
-$result = mysqli_query(conectar(), $sql);
-$cont_login = mysqli_num_rows($result);
-$datos = mysqli_fetch_array($result);
+$datos = null;
 
-if ($cont_login != 0)
-{
+if ($email !== '' && $password !== '') {
+    $con  = conectar();
+    $stmt = mysqli_prepare($con, 'SELECT nombre, password FROM usuarios WHERE email = ? LIMIT 1');
+    mysqli_stmt_bind_param($stmt, 's', $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $datos  = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+}
+
+// Comparación TEMPORAL en texto plano, hecha en PHP y fuera del SQL.
+// Se reemplazará por password_verify() en VUL-07.
+if ($datos && hash_equals((string) $datos['password'], $password)) {
     $_SESSION['nombre'] = $datos['nombre'];
 }
 
