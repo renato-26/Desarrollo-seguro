@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+node_modules
+pnkSecurity
+Script_BD
+configuracion
+tests
+docs
+playwright-report
+test-results
+*.log

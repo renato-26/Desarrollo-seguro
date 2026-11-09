@@ -1,0 +1,26 @@
+{
+  "name": "pnksecurity-fullstack-mvc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env backend/src/server.js",
+    "dev": "node --env-file-if-exists=.env --watch backend/src/server.js",
+    "test": "node --test tests/unit/*.test.js",
+    "test:db": "node --env-file-if-exists=.env --test tests/integration/*.test.js",
+    "test:e2e": "playwright test",
+    "db:migrate": "node --env-file-if-exists=.env database/run.js migrate",
+    "db:seed": "node --env-file-if-exists=.env database/run.js seed"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0"
+  }
+}

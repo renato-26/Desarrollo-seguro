@@ -1,0 +1,49 @@
+name: Full Stack QA
+on:
+  push:
+    branches: [feature/fullstack-mvc]
+  pull_request:
+    branches: [main, mejoras, feature/fullstack-mvc]
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: pnk_security_qa
+          POSTGRES_USER: pnk_qa
+          POSTGRES_PASSWORD: ci_only_disposable
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U pnk_qa -d pnk_security_qa"
+          --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      APP_ENV: qa
+      NODE_ENV: test
+      DATABASE_URL: postgresql://pnk_qa:ci_only_disposable@127.0.0.1:5432/pnk_security_qa
+      DB_SSL: disable
+      EXPECT_DATABASE_UP: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm test
+      - run: npm run test:db
+      - run: npm run test:e2e
+      - run: docker compose config --quiet
+        env:
+          POSTGRES_PASSWORD: ci_only_disposable
+      - run: docker build -t pnksecurity:qa .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
