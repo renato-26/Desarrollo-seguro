@@ -16,3 +16,13 @@ test('archivos internos y PHP no son accesibles desde Express', async ({ request
     expect(await response.json()).toEqual({ error: 'Recurso no encontrado' });
   }
 });
+
+
+test('nuevo frontend y recursos públicos accesibles sin publicar PHP', async ({ request }) => {
+  const home = await request.get('/');
+  expect(home.status()).toBe(200);
+  expect(await home.text()).toContain('PNK · Carta Digital');
+  const javascript = await request.get('/static/app.js');
+  expect(javascript.status()).toBe(200);
+  expect(await javascript.text()).toContain('/api/restaurantes');
+});

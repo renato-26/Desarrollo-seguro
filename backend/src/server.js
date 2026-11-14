@@ -6,7 +6,7 @@ import { createApp } from './app.js';
 try {
   const config = loadConfig();
   const pool = createPool(config);
-  const server = createApp({ checkDatabase: createDatabaseCheck(pool) })
+  const server = createApp({ checkDatabase: createDatabaseCheck(pool), pool })
     .listen(config.port, '0.0.0.0', () => console.log(`PNKSecurity escuchando en puerto ${config.port}`));
   server.on('error', () => {
     console.error('No fue posible iniciar el servidor HTTP');

@@ -1,0 +1,13 @@
+EVA 3 — CAMBIOS SOBRE feature/fullstack-mvc
+
+Este ZIP NO es un repositorio independiente: contiene SOLO los archivos nuevos o modificados sobre la rama que enviaste.
+1. Confirma que estás en feature/fullstack-mvc y guarda tus cambios previos con Git.
+2. Extrae el ZIP FUERA de tu repositorio.
+3. Copia las carpetas/archivos del ZIP sobre la raíz de tu repositorio, fusionando los directorios existentes.
+4. Revisa `git diff` antes de hacer commit o push. No hace falta tocar main ni mejoras.
+5. Sigue el README de EVA3 y ejecuta npm ci/npm test en Node 24.
+6. Para Docker local: crea .env desde .env.example, configura POSTGRES_PASSWORD y usa scripts/start-dev.ps1.
+7. En navegador: http://localhost:3000/ y http://localhost:3000/carta/1.
+
+No se modificó el PHP original ni el dump. El backend actualizado NO incluye login/carrito/comentarios.
+Pruebas SQL completas y Docker no verificadas en esta ejecución; consulta docs/EVA3-avance.md.

@@ -1,3 +1,5 @@
+> **Registro histórico de 09/11/2026:** no cubre la iteración EVA3 posterior. Consultar [`EVA3-avance.md`](EVA3-avance.md) para los cambios nuevos y sus límites de verificación.
+
 # Verificación local — 2026-11-09
 
 ## Git

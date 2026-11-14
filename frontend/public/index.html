@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Carta digital de restaurantes. Explora menús y platos disponibles.">
+  <title>PNK · Carta Digital</title>
+  <link rel="icon" href="/static/assets/Fevicon.png">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Volver al inicio"><span class="brand-icon">P</span><span>PNK<span class="brand-light"> / CARTA DIGITAL</span></span></a>
+    <span class="top-pill">Explora los sabores</span>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="main-title">
+      <div class="hero-inner">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> DESCUBRE TU PRÓXIMO FAVORITO</div>
+        <h1 id="main-title">Una carta.<br><em>Muchos sabores.</em></h1>
+        <p id="hero-description">Encuentra tu restaurante, explora su carta y descubre cada especialidad.</p>
+        <a id="back-link" class="back-link" href="/" hidden>← Ver todos los restaurantes</a>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="art-circle"><span>PNK</span><small>SELECCIÓN<br>GASTRONÓMICA</small></div></div>
+    </section>
+    <section class="content" aria-live="polite">
+      <div id="status" role="status" class="loading">Cargando carta digital…</div>
+      <div id="restaurant-index" hidden>
+        <div class="section-heading"><div><div class="eyebrow dark">EXPLORA</div><h2>Restaurantes</h2></div><span id="restaurant-count" class="count"></span></div>
+        <label class="search-label" for="restaurant-search">Buscar restaurante</label>
+        <input id="restaurant-search" type="search" placeholder="Buscar por nombre o ciudad" autocomplete="off" maxlength="100">
+        <div id="restaurants" class="restaurant-grid"></div>
+      </div>
+      <div id="restaurant-detail" hidden>
+        <div id="restaurant-info" class="restaurant-info"></div>
+        <div id="featured" class="featured"></div>
+        <div class="section-heading"><div><div class="eyebrow dark">EL MENÚ</div><h2>Nuestra carta</h2></div></div>
+        <nav id="menu-tabs" class="menu-tabs" aria-label="Secciones de la carta"></nav>
+        <div id="menu-content"></div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="footer-inner"><span>PNK / CARTA DIGITAL</span><span>Proyecto académico · Desarrollo Seguro</span></div></footer>
+</body>
+</html>

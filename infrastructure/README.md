@@ -6,7 +6,7 @@ PostgreSQL local se ejecuta exclusivamente mediante Docker Compose, con la image
 
 ## Cloudflare primero
 
-No se crean recursos ni se publica en esta fase. El frontend actual contiene PHP y no se puede publicar tal cual como contenido estático. Primero migrar las vistas de forma incremental conservando diseño, recursos y comportamiento. Luego evaluar Workers con compatibilidad Node y adaptación de Express; la conexión PostgreSQL puede usar Hyperdrive contra una DB alojada externamente. Workers no ejecuta el contenedor de Compose ni aloja PostgreSQL. Validar el adaptador, sesiones, cookies, secretos, TLS y rutas antes de preparar un despliegue revisable.
+No se crean recursos ni se publica en esta fase. El frontend NUEVO de EVA3 se compone de HTML, CSS y JS y podría alojarse como estático en Cloudflare Pages tras configurar la URL de la API y el dominio; por ahora depende de rutas `/api` del mismo origen, así que no basta con subir el directorio sin adaptar el enrutamiento. La API Express todavía requiere un runtime compatible (p. ej., AWS ECS o una adaptación verificada a Workers). Workers no ejecuta directamente el contenedor Docker Compose ni aloja PostgreSQL. Nunca publicar los archivos PHP o el dump del repositorio. Validar el adaptador, sesiones, cookies, secretos, TLS y rutas antes de preparar un despliegue revisable.
 
 Referencias oficiales consultadas:
 - [Compatibilidad Node.js en Workers](https://developers.cloudflare.com/workers/runtime-apis/nodejs/)

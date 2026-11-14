@@ -1,6 +1,16 @@
+# EVA 3 — Nueva carta digital funcional (primera iteración)
+
+**Nuevo en esta entrega:** frontend independiente del PHP original, API de lectura de restaurantes/carta/productos y pruebas de consultas parametrizadas. La autenticación, el carrito y los comentarios aún no se migran. La verificación completa exige Docker + PostgreSQL real. Ver [registro EVA3](docs/EVA3-avance.md).
+
+**Acceso (una vez preparado `.env`, ejecutadas las migraciones y el seed):** `http://localhost:3000` o `http://localhost:3000/carta/1`. Para arrancar en Windows, `powershell -ExecutionPolicy Bypass -File .\scripts\start-dev.ps1`. Se requiere Docker Desktop activo.
+
+**Rutas API:** `/api/restaurantes`, `/api/restaurantes/:id/carta`, `/api/health`. Los datos se obtienen exclusivamente de PostgreSQL. Si la DB no está accesible, el frontend informa del problema; no presenta datos ficticios.
+
+---
+
 # Desarrollo Seguro — pnkSecurity
 
-Evolución de la carta digital multirrestaurante original a Full Stack MVC, en `feature/fullstack-mvc`, basada en `origin/mejoras` (7d321da). PHP y frontend originales se conservan como referencia; no se ha rediseñado la carta ni migrado todavía autenticación, carrito, comentarios o consultas de negocio.
+Evolución de la carta digital multirrestaurante original a Full Stack MVC, en `feature/fullstack-mvc`, basada en `origin/mejoras` (7d321da). PHP y frontend originales se conservan como referencia histórica. Se añadió un frontend nuevo que consume la API de lectura de restaurantes, cartas, categorías y platos; autenticación, carrito, comentarios y escritura siguen pendientes.
 
 ## Stack y arquitectura
 
@@ -43,7 +53,7 @@ npm run dev
 
 `GET http://localhost:3000/api/health` responde 200 con `{"status":"ok","database":"up"}` si PostgreSQL acepta `SELECT 1`. Responde 503 con estado `degraded` si la DB no está disponible. El proceso HTTP puede arrancar con DB caída. Esta comprobación no valida la versión del esquema: ejecutar migraciones antes de habilitar tráfico.
 
-La API no sirve PHP ni el directorio raíz. El frontend sigue funcionando bajo su entorno PHP original mientras se migra; Express aún no lo integra. Nunca publicar el PHP o el dump mediante un servidor estático.
+La API no sirve PHP ni el dump ni los directorios sensibles del repositorio. Express sirve el frontend nuevo en `/` y `/carta/:id`, con recursos estáticos únicamente desde `frontend/public` a través de `/static`. Nunca publicar el PHP o el dump mediante un servidor estático.
 
 ## Docker local (DEV)
 
@@ -99,9 +109,9 @@ En la siguiente fase, usar IA para proponer casos Playwright a partir de las rut
 
 ## Estado y pendientes
 
-- Preparados: base MVC, health endpoint, esquema/seed PostgreSQL, runner SQL, Docker, plantillas de ambientes y workflow QA.
-- Pendientes: migración incremental de vistas y funciones PHP, recuperación/autenticación segura, permisos por restaurante, protección CSRF y límites de solicitudes para rutas sensibles.
-- Verificación local y limitaciones: [informe](docs/verification.md).
+- Preparados: base MVC, health endpoint, API de lectura de carta/restaurantes, frontend nuevo, esquema/seed PostgreSQL, runner SQL, Docker, plantillas de ambientes y workflow QA.
+- Pendientes: validación real en Docker/PostgreSQL, recuperación/autenticación segura, carrito, comentarios, permisos de escritura por restaurante, protección CSRF y límites de solicitudes para rutas sensibles.
+- Registro EVA3: [nueva interfaz y API de lectura](docs/EVA3-avance.md). Verificación anterior (9/11): [informe histórico](docs/verification.md).
 - Detalles de conversión y credenciales: [migración](docs/migration.md).
 - Publicación futura: [Cloudflare y AWS](infrastructure/README.md).
 

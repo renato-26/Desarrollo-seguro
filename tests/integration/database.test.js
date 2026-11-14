@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createPool } from '../../backend/src/config/database.js';
 import { loadConfig } from '../../backend/src/config/env.js';
 import { runSqlDirectory } from '../../database/runner.js';
+import { getRestaurantMenu, listRestaurants } from '../../backend/src/services/catalog.service.js';
 
 // Usar exclusivamente una DB de pruebas vacía; no ejecutar sobre datos de negocio.
 test('PostgreSQL: migraciones, seed, relaciones, credenciales e historial', async () => {
@@ -29,6 +30,18 @@ test('PostgreSQL: migraciones, seed, relaciones, credenciales e historial', asyn
     const sequence = await pool.query('SELECT last_value, is_called FROM restautantes_id_seq');
     assert.equal(Number(sequence.rows[0].last_value), 7);
     assert.equal(sequence.rows[0].is_called, true);
+    // EVA3: validar el catálogo real y aislamiento entre restaurantes.
+    const restaurants = await listRestaurants(pool);
+    assert.equal(restaurants.length, 7);
+    const firstMenu = await getRestaurantMenu(pool, 1);
+    assert.equal(firstMenu.restaurante.id, 1);
+    const visibleIds = firstMenu.cartas.flatMap(c => c.categorias.flatMap(k => k.productos.map(p => p.id))).sort((a,b) => a-b);
+    assert.deepEqual(visibleIds, [1, 2, 4, 5, 7]);
+    assert.deepEqual(firstMenu.destacados.map(p => p.id).sort((a,b) => a-b), [2, 5, 7]);
+    const secondMenu = await getRestaurantMenu(pool, 2);
+    assert.equal(secondMenu.restaurante.id, 2);
+    assert.equal(secondMenu.cartas.flatMap(c => c.categorias.flatMap(k => k.productos)).length, 0);
+    assert.equal(await getRestaurantMenu(pool, 999), null);
     const history = await pool.query("SELECT checksum FROM schema_history WHERE name='migrate/001_initial_schema.sql'");
     try {
       await pool.query("UPDATE schema_history SET checksum='tampered' WHERE name='migrate/001_initial_schema.sql'");
