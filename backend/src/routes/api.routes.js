@@ -15,5 +15,6 @@ export function createApiRoutes(checkDatabase, db, environment = 'dev') {
   router.get('/restaurantes', catalog.list);
   router.get('/restaurantes/:id/carta', catalog.menu);
   router.get('/restaurantes/:id/comentarios', catalog.comments);
+  router.post('/restaurantes/:id/comentarios', checkSameOriginWrite, loadOptionalSession(db), catalog.createComment);
   return router;
 }

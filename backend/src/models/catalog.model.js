@@ -63,3 +63,16 @@ export async function findComments(db, id) {
      ORDER BY co.id ASC LIMIT 100`, [id]);
   return rows;
 }
+
+
+// Inserción segura: únicamente usuario autenticado y restaurante activo.
+// La identidad del autor se toma de la sesión validada, no del JSON del cliente.
+export async function insertComment(db, restauranteId, usuarioId, nombreUsuario, texto) {
+  const { rows } = await db.query(`
+    INSERT INTO comentarios (usuario, comentario, id_restaurante, usuario_id)
+    SELECT $3, $4, r.id, $2
+      FROM restautantes AS r
+     WHERE r.id = $1 AND r.eliminado IS NULL
+    RETURNING id, usuario, comentario`, [restauranteId, usuarioId, nombreUsuario, texto]);
+  return rows[0] ?? null;
+}

@@ -44,6 +44,9 @@ function setAuthUser(user) {
   el('usuario-sesion').hidden = !user;
   el('usuario-sesion').style.display = user ? 'block' : 'none';
   el('nombre-sesion').textContent = user ? `Sesión: ${user.nombre || user.email}` : '';
+  el('comentarios-form').hidden = !user;
+  el('comentarios-aviso').hidden = Boolean(user);
+  if (!user) el('comentarios-form').reset();
 }
 async function updateAuthUser() {
   try { const result = await getJSON('/api/auth/me'); setAuthUser(result.usuario); }
@@ -190,6 +193,35 @@ async function renderComments() {
     }
   } catch { add(box,node('p','','No fue posible cargar los comentarios.')); }
 }
+async function submitComment(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const textarea = el('texto-comentario');
+  const mensaje = el('comentarios-resultado');
+  const submit = form.querySelector('button[type="submit"]');
+  const comentario = textarea.value.trim();
+  if (!comentario || comentario.length > 1000) {
+    mensaje.textContent = 'Escribe un comentario de 1 a 1000 caracteres.';
+    return;
+  }
+  submit.disabled = true;
+  mensaje.textContent = '';
+  try {
+    const response = await fetch(`/api/restaurantes/${currentId}/comentarios`, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-PNK-Request': '1' },
+      body: JSON.stringify({ comentario })
+    });
+    const result = await response.json();
+    if (response.status === 401) { setAuthUser(null); throw new Error('Tu sesión expiró. Inicia sesión nuevamente.'); }
+    if (!response.ok) throw new Error(result.error || 'No se pudo guardar el comentario.');
+    textarea.value = '';
+    await renderComments();
+    mensaje.textContent = 'Comentario publicado correctamente.';
+  } catch(error) {
+    mensaje.textContent = error.message || 'No se pudo publicar el comentario.';
+  } finally { submit.disabled = false; }
+}
 function renderCart() {
   el('seccion-destacados').hidden=true;
   el('seccion-cartas').hidden=true;
@@ -219,6 +251,7 @@ async function start() {
   el('limpiar-carrito').addEventListener('click',()=>{saveCart([]);renderCart();});
   el('login-form').addEventListener('submit', submitLogin);
   el('cerrar-sesion').addEventListener('click', logout);
+  el('comentarios-form').addEventListener('submit', submitComment);
   await updateAuthUser();
   try {
     currentData=await getJSON(`/api/restaurantes/${currentId}/carta`);
