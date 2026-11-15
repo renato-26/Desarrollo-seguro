@@ -1,0 +1,24 @@
+EVA 3 - Implementacion de autenticacion segura (sobre feature/fullstack-mvc)
+
+1. Este ZIP incluye SOLO archivos nuevos o modificados. Extrae fuera del repositorio
+   y copia su contenido a la raiz Desarrollo-seguro (donde esta package.json).
+   NO borres otras carpetas. NO copies un archivo .env de otro lugar.
+2. Ya instalaste argon2 con npm install argon2; por eso no se modifica el
+   package.json ni package-lock.json presentes en tu PC.
+3. En Git Bash, en la carpeta del proyecto, ejecuta npm run db:migrate
+   (aplica la nueva migracion 002_auth_sessions.sql).
+4. Ejecuta npm test (unitarias) para verificar el codigo.
+5. En la misma terminal ejecuta:
+     node --env-file=.env scripts/set-user-password.js 1
+   Elige DOS VECES una contrasena nueva con al menos 12 caracteres.
+   No compartas esa clave. No se muestran los caracteres mientras se escribe.
+6. Ejecuta PORT=3100 npm start y abre http://127.0.0.1:3100/?id=1
+   Inicia sesion como admin@gmail.com con la contrasena que elegiste.
+
+NOTAS:
+- .env y .env.qa siguen excluidos de Git; no copies nunca tus contrasenas al chat.
+- No ejecutes los tests de integracion sobre pnk_security de desarrollo.
+- El usuario Alondra (ID 2) queda desactivado hasta establecerle una clave.
+- Comentar (POST) sigue pendiente; consultas y carrito se conservan.
+- No hacer commit/push hasta comprobar API, formulario y pruebas.
+- Cambiar credenciales PostgreSQL compartidas antes de publicar la aplicacion.

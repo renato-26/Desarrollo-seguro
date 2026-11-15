@@ -37,6 +37,46 @@ async function getJSON(path) {
   return response.json();
 }
 function showError(text) { const s = el('estado'); s.textContent = text; s.hidden = false; }
+
+function setAuthUser(user) {
+  el('login-form').hidden = Boolean(user);
+  el('login-form').style.display = user ? 'none' : 'flex';
+  el('usuario-sesion').hidden = !user;
+  el('usuario-sesion').style.display = user ? 'block' : 'none';
+  el('nombre-sesion').textContent = user ? `Sesión: ${user.nombre || user.email}` : '';
+}
+async function updateAuthUser() {
+  try { const result = await getJSON('/api/auth/me'); setAuthUser(result.usuario); }
+  catch { setAuthUser(null); }
+}
+async function submitLogin(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const identifier = form.elements.frmusuario.value.trim();
+  const password = form.elements.frmpassword.value;
+  form.elements.frmpassword.value = '';
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type':'application/json', 'X-PNK-Request':'1'},
+      body: JSON.stringify({ identifier, password })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'No fue posible iniciar sesión.');
+    setAuthUser(result.usuario);
+    el('estado').hidden = true;
+  } catch (error) { showError(error.message); }
+}
+async function logout() {
+  try {
+    const response = await fetch('/api/auth/logout', { method:'POST', credentials:'same-origin', headers:{'X-PNK-Request':'1'} });
+    if (!response.ok) throw new Error('No fue posible cerrar sesión.');
+    setAuthUser(null);
+    el('login-form').reset();
+    el('estado').hidden = true;
+  } catch (error) { showError(error.message); }
+}
+
 function cartKey() { return `${CART_PREFIX}${currentId}`; }
 function loadCart() {
   try { const ids = JSON.parse(sessionStorage.getItem(cartKey()) || '[]');
@@ -177,7 +217,9 @@ async function start() {
   el('carrito-enlace').href=`/carrito/${currentId}`;
   el('volver-carta').addEventListener('click',()=>location.assign(`/carta/${currentId}`));
   el('limpiar-carrito').addEventListener('click',()=>{saveCart([]);renderCart();});
-  el('login-form').addEventListener('submit',e=>{e.preventDefault();showError('El inicio de sesión todavía está pendiente de migrar al nuevo backend.');});
+  el('login-form').addEventListener('submit', submitLogin);
+  el('cerrar-sesion').addEventListener('click', logout);
+  await updateAuthUser();
   try {
     currentData=await getJSON(`/api/restaurantes/${currentId}/carta`);
     showMenu(currentData);

@@ -7,7 +7,7 @@ import { notFound, errorHandler } from './middleware/errors.js';
 const webRoot = fileURLToPath(new URL('../../frontend/public/', import.meta.url));
 const home = fileURLToPath(new URL('../../frontend/public/index.html', import.meta.url));
 
-export function createApp({ checkDatabase, pool }) {
+export function createApp({ checkDatabase, pool, environment = 'dev' }) {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet({ contentSecurityPolicy: { directives: {
@@ -15,7 +15,7 @@ export function createApp({ checkDatabase, pool }) {
     'font-src': ["'self'", 'https://fonts.gstatic.com']
   } } }));
   app.use(express.json({ limit: '16kb' }));
-  app.use('/api', createApiRoutes(checkDatabase, pool));
+  app.use('/api', createApiRoutes(checkDatabase, pool, environment));
   // Se sirve exclusivamente el frontend adaptado de main; nunca PHP, SQL ni .env del repositorio.
   app.use('/static', express.static(webRoot, { dotfiles: 'deny', index: false, maxAge: '1h' }));
   app.get('/', (_req, res) => res.sendFile(home));

@@ -1,3 +1,9 @@
+# EVA 3 — Autenticación local (tercera iteración)
+
+Se implementó autenticación Argon2id con sesiones en PostgreSQL. Para activar una cuenta existente, primero aplicar `npm run db:migrate`, después ejecutar `node --env-file=.env scripts/set-user-password.js 1` e ingresar una contraseña privada nueva en la terminal. El frontend original conserva el formulario de acceso. Ver `docs/EVA3-autenticacion.md`. El envío de comentarios autenticado sigue pendiente.
+
+---
+
 # EVA 3 — Frontend original conservado, backend MVC con Node.js y PostgreSQL
 
 **Actualización (iteración 2):** se recuperó el diseño y los recursos del `pnkSecurity/index.php` de la rama `main`: logotipos, colores, fondo, destacados, pestañas de cartas, categorías, selección de productos y sección de comentarios. La presentación ahora funciona con JavaScript y consulta el backend Express/PostgreSQL; no se ejecuta PHP. El carrito se guarda temporalmente en la sesión del navegador. El inicio de sesión y la escritura de comentarios **siguen pendientes de migración segura**. Ver `docs/EVA3-frontend-original.md`.

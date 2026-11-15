@@ -1,10 +1,16 @@
 import { Router } from 'express';
 import { createHealthController } from '../controllers/health.controller.js';
 import { createCatalogController } from '../controllers/catalog.controller.js';
+import { createAuthController } from '../controllers/auth.controller.js';
+import { checkSameOriginWrite, loadOptionalSession } from '../middleware/auth.js';
 
-export function createApiRoutes(checkDatabase, db) {
+export function createApiRoutes(checkDatabase, db, environment = 'dev') {
   const router = Router();
   const catalog = createCatalogController(db);
+  const auth = createAuthController(db, environment);
+  router.get('/auth/me', loadOptionalSession(db), auth.me);
+  router.post('/auth/login', checkSameOriginWrite, auth.login);
+  router.post('/auth/logout', checkSameOriginWrite, loadOptionalSession(db), auth.logout);
   router.get('/health', createHealthController(checkDatabase));
   router.get('/restaurantes', catalog.list);
   router.get('/restaurantes/:id/carta', catalog.menu);
