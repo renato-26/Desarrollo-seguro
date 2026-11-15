@@ -18,11 +18,11 @@ test('archivos internos y PHP no son accesibles desde Express', async ({ request
 });
 
 
-test('nuevo frontend y recursos públicos accesibles sin publicar PHP', async ({ request }) => {
+test('frontend original adaptado y recursos públicos accesibles sin publicar PHP', async ({ request }) => {
   const home = await request.get('/');
   expect(home.status()).toBe(200);
-  expect(await home.text()).toContain('PNK · Carta Digital');
-  const javascript = await request.get('/static/app.js');
+  expect(await home.text()).toContain('PNK Security - Carta Digital');
+  const javascript = await request.get('/static/legacy-app.js');
   expect(javascript.status()).toBe(200);
   expect(await javascript.text()).toContain('/api/restaurantes');
 });

@@ -8,5 +8,6 @@ export function createApiRoutes(checkDatabase, db) {
   router.get('/health', createHealthController(checkDatabase));
   router.get('/restaurantes', catalog.list);
   router.get('/restaurantes/:id/carta', catalog.menu);
+  router.get('/restaurantes/:id/comentarios', catalog.comments);
   return router;
 }

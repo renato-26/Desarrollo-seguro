@@ -1,0 +1,16 @@
+/* Ajustes técnicos mínimos sobre el diseño original, sin reemplazar su CSS. */
+.legacy-cabecera { padding-top: 25px; padding-bottom: 22px; }
+.legacy-status { padding: 12px 20px; color: #7e2525; }
+.legacy-status[hidden], [hidden] { display: none !important; }
+#restaurante-contacto { line-height: 1.7; }
+#restaurante-contacto span { display: inline-block; margin: 0 8px; }
+.food-card > img { width: 120px; height: 95px; object-fit: cover; }
+.featured-item img.card-img { width: 100%; height: 235px; object-fit: cover; }
+#seccion-carrito { padding-top: 30px; padding-bottom: 40px; }
+#comentarios-lista .card { margin-bottom: 12px; }
+#carrito-contador { font-weight: 700; }
+#seccion-cartas { margin-top: 28px; }
+#seccion-comentarios { margin-top: 28px; }
+.empty-category { text-align: center; padding: 14px 0; }
+.legacy-loading { padding: 20px 0; }
+@media (max-width: 767px) { .legacy-cabecera .col-lg-4 { margin-bottom: 16px; } .food-card > img { width: 90px; height: 80px; } }

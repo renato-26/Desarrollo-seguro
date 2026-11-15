@@ -29,3 +29,7 @@
 3. Implementar autenticación y recuperación seguras antes de funciones de escritura.
 4. Carrito y comentarios con sesión, control por usuario/restaurante y anti-CSRF.
 5. QA, deploy e infraestructura AWS RDS/ALB/Auto Scaling; Cloudflare DNS/HTTPS; manual PDF con evidencias reales.
+
+
+## Actualización — frontend original recuperado
+Tras confirmar el requisito del docente, se reemplazó el frontend nuevo de la primera iteración por una adaptación de la interfaz original desde la rama `main`. Se conservaron el CSS, las imágenes y las clases de Bootstrap, conectando la carta al backend Node.js/PostgreSQL. No se publica PHP. El carrito es temporal en sessionStorage; login y escritura de comentarios siguen pendientes. Detalles y validación: `docs/EVA3-frontend-original.md`.

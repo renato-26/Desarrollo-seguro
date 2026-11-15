@@ -1,0 +1,15 @@
+EVA 3 - REEMPLAZO DEL FRONTEND POR EL DISEÑO ORIGINAL DE main
+
+1) Trabaja en la rama feature/fullstack-mvc y confirma que no tienes cambios sin guardar.
+2) Extrae este ZIP FUERA del repositorio, por ejemplo en Descargas.
+3) Copia el CONTENIDO EXTRAÍDO (no la carpeta contenedora) a la raíz de Desarrollo-seguro, donde está package.json. Fusiona las carpetas y reemplaza solo archivos coincidentes.
+4) No copies .env, ni borres PostgreSQL, ni uses XAMPP.
+5) En la terminal Git Bash de VS Code: PORT=3100 npm start
+   (si el backend ya está abierto, primero Ctrl+C y vuelve a arrancarlo).
+6) Visita: http://127.0.0.1:3100/?id=1
+   Debes ver el diseño original azul/blanco, logos PNK, Menús Destacados, pestañas, carrito y comentarios.
+7) Luego: npm test. Envia captura del navegador y resultado de pruebas antes del commit.
+
+Nota: carrito provisional de sesión del navegador; el inicio de sesión y los nuevos comentarios todavía no escriben a PostgreSQL. El usuario verá un aviso al intentar autenticarse. El PHP vulnerable original NO se sirve.
+
+No subas .env a GitHub. Rota las contraseñas anteriormente compartidas, incluso en laboratorio. Cierra Live Preview: exponía archivos de tu carpeta por otro servidor.

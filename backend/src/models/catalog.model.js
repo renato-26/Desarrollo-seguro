@@ -52,3 +52,14 @@ export async function findItems(db, id) {
      ORDER BY i.orden NULLS LAST, i.id`, [id]);
   return rows;
 }
+
+// Comentarios públicos, acotados a un restaurante existente. Ninguna escritura sin autenticación.
+export async function findComments(db, id) {
+  const { rows } = await db.query(`
+    SELECT co.id, co.usuario, co.comentario
+      FROM comentarios AS co
+      JOIN restautantes AS r ON r.id = co.id_restaurante
+     WHERE co.id_restaurante = $1 AND r.eliminado IS NULL
+     ORDER BY co.id ASC LIMIT 100`, [id]);
+  return rows;
+}

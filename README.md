@@ -1,6 +1,16 @@
+# EVA 3 — Frontend original conservado, backend MVC con Node.js y PostgreSQL
+
+**Actualización (iteración 2):** se recuperó el diseño y los recursos del `pnkSecurity/index.php` de la rama `main`: logotipos, colores, fondo, destacados, pestañas de cartas, categorías, selección de productos y sección de comentarios. La presentación ahora funciona con JavaScript y consulta el backend Express/PostgreSQL; no se ejecuta PHP. El carrito se guarda temporalmente en la sesión del navegador. El inicio de sesión y la escritura de comentarios **siguen pendientes de migración segura**. Ver `docs/EVA3-frontend-original.md`.
+
+**Ejecución local ya comprobada previamente (backend versión 1):** en Git Bash, `PORT=3100 npm start` y abrir `http://127.0.0.1:3100/?id=1`. El puerto 3000 estaba ocupado por Live Preview en el PC; apagar Live Preview para evitar exposición de archivos del repositorio. Ejecutar `npm test` después de instalar la iteración 2 y verificar el aspecto visual en el navegador.
+
+**Rutas:** `/` (restaurante 1 predeterminado), `/?id=N`, `/carta/N`, `/carrito/N`, `/api/health`, `/api/restaurantes`, `/api/restaurantes/:id/carta`, `/api/restaurantes/:id/comentarios`.
+
+---
+
 # EVA 3 — Nueva carta digital funcional (primera iteración)
 
-**Nuevo en esta entrega:** frontend independiente del PHP original, API de lectura de restaurantes/carta/productos y pruebas de consultas parametrizadas. La autenticación, el carrito y los comentarios aún no se migran. La verificación completa exige Docker + PostgreSQL real. Ver [registro EVA3](docs/EVA3-avance.md).
+**En la iteración inicial:** frontend independiente del PHP original, API de lectura de restaurantes/carta/productos y pruebas de consultas parametrizadas. La autenticación, el carrito y los comentarios aún no se migran. La verificación completa exige Docker + PostgreSQL real. Ver [registro EVA3](docs/EVA3-avance.md).
 
 **Acceso (una vez preparado `.env`, ejecutadas las migraciones y el seed):** `http://localhost:3000` o `http://localhost:3000/carta/1`. Para arrancar en Windows, `powershell -ExecutionPolicy Bypass -File .\scripts\start-dev.ps1`. Se requiere Docker Desktop activo.
 
@@ -10,7 +20,7 @@
 
 # Desarrollo Seguro — pnkSecurity
 
-Evolución de la carta digital multirrestaurante original a Full Stack MVC, en `feature/fullstack-mvc`, basada en `origin/mejoras` (7d321da). PHP y frontend originales se conservan como referencia histórica. Se añadió un frontend nuevo que consume la API de lectura de restaurantes, cartas, categorías y platos; autenticación, carrito, comentarios y escritura siguen pendientes.
+Evolución de la carta digital multirrestaurante original a Full Stack MVC, en `feature/fullstack-mvc`, basada en `origin/mejoras` (7d321da). PHP y frontend originales se conservan como referencia histórica. La iteración inicial añadió un frontend nuevo; la segunda conserva el diseño original de `main` y lo conecta a la API. Autenticación y escritura de comentarios siguen pendientes. El carrito actual es solo local al navegador.
 
 ## Stack y arquitectura
 
@@ -53,7 +63,7 @@ npm run dev
 
 `GET http://localhost:3000/api/health` responde 200 con `{"status":"ok","database":"up"}` si PostgreSQL acepta `SELECT 1`. Responde 503 con estado `degraded` si la DB no está disponible. El proceso HTTP puede arrancar con DB caída. Esta comprobación no valida la versión del esquema: ejecutar migraciones antes de habilitar tráfico.
 
-La API no sirve PHP ni el dump ni los directorios sensibles del repositorio. Express sirve el frontend nuevo en `/` y `/carta/:id`, con recursos estáticos únicamente desde `frontend/public` a través de `/static`. Nunca publicar el PHP o el dump mediante un servidor estático.
+La API no sirve PHP ni el dump ni los directorios sensibles del repositorio. Express sirve el frontend adaptado del original en `/` y `/carta/:id`, con recursos estáticos únicamente desde `frontend/public` a través de `/static`. Nunca publicar el PHP o el dump mediante un servidor estático.
 
 ## Docker local (DEV)
 
