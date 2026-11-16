@@ -1,10 +1,15 @@
 export async function findUserForLogin(db, identifier) {
   const result = await db.query(
-    `SELECT id, nombre, email, password_hash, requiere_cambio_password
+    `SELECT id, nombre, email, password_hash, requiere_cambio_password, rol,
+            (estado = '1') AS activo,
+            ARRAY(SELECT restaurante_id FROM usuario_restaurantes WHERE usuario_id = usuarios.id ORDER BY restaurante_id) AS restaurantes
        FROM usuarios
       WHERE estado = '1' AND (lower(email) = $1 OR lower(nombre) = $1)
-      ORDER BY id LIMIT 1`, [identifier.toLowerCase()]);
-  return result.rows[0] ?? null;
+      ORDER BY CASE WHEN lower(email) = $1 THEN 0 ELSE 1 END, id LIMIT 2`, [identifier.toLowerCase()]);
+  const emails = result.rows.filter(user => user.email?.toLowerCase() === identifier.toLowerCase());
+  if (emails.length) return emails.length === 1 ? emails[0] : null;
+  // Los nombres historicos no son unicos: no elegir arbitrariamente otra cuenta.
+  return result.rows.length === 1 ? result.rows[0] : null;
 }
 
 export async function isBlocked(db, attemptHash) {
@@ -41,7 +46,8 @@ export async function insertSession(db, tokenHash, userId, ttlSeconds) {
 
 export async function findSession(db, tokenHash) {
   const result = await db.query(
-    `SELECT u.id, u.nombre, u.email
+    `SELECT u.id, u.nombre, u.email, u.rol, (u.estado = '1') AS activo,
+            ARRAY(SELECT restaurante_id FROM usuario_restaurantes WHERE usuario_id = u.id ORDER BY restaurante_id) AS restaurantes
        FROM auth_sessions s JOIN usuarios u ON u.id = s.usuario_id
       WHERE s.token_hash = $1 AND s.expires_at > now()
         AND u.estado = '1' AND NOT u.requiere_cambio_password

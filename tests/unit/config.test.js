@@ -15,3 +15,11 @@ test('configuración rechaza valores inválidos sin exponer secretos', () => {
     { APP_ENV: 'prod', NODE_ENV: 'development' }, { DB_SSL: 'false' }
   ]) assert.throws(() => loadConfig({ ...valid, ...change }), /Configuración inválida/);
 });
+test('producción exige TLS verificado y rechaza conexiones sin cifrado', () => {
+  const production = { ...valid, APP_ENV: 'prod', NODE_ENV: 'production' };
+  for (const change of [{}, { DB_SSL: 'disable' }]) {
+    assert.throws(() => loadConfig({ ...production, ...change }), /Configuración inválida/);
+  }
+  assert.equal(loadConfig({ ...production, DB_SSL: 'verify-full' }).sslMode, 'verify-full');
+  assert.throws(() => loadConfig({ ...production, DB_SSL: 'verify-full', DATABASE_URL: `${valid.DATABASE_URL}?sslmode=no-verify` }), /Configuración inválida/);
+});

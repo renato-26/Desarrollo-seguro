@@ -1,3 +1,5 @@
+> Documento histórico: describe una iteración anterior. El estado vigente, las pruebas y las restricciones de operación están en [EVA3-estado-final.md](EVA3-estado-final.md).
+
 # EVA 3 — Recuperación del frontend original (main)
 
 ## Motivo

@@ -41,14 +41,14 @@ export async function findCategories(db, id) {
 
 export async function findItems(db, id) {
   const { rows } = await db.query(`
-    SELECT i.id, i.nombre, i.descripcion, i.tiempo, i.precio, i.foto,
-           i.destacado, i.puntuacion, i.categorias_id
+    SELECT i.id, i.nombre, i.descripcion, i.observaciones, i.tiempo, i.precio, i.foto,
+           i.destacado, i.puntuacion, i.categorias_id, i.disponible
       FROM items AS i
       JOIN categorias AS ca ON ca.id = i.categorias_id
       JOIN cartas AS c ON c.id = ca.cartas_id
      WHERE c.restautantes_id = $1 AND c.visible IS TRUE AND c.eliminada IS NULL
        AND ca.visible IS TRUE AND ca.eliminado IS NULL
-       AND i.visible IS TRUE AND i.eliminado IS NULL
+       AND i.visible IS TRUE AND i.eliminado IS NULL AND i.disponible IS TRUE
      ORDER BY i.orden NULLS LAST, i.id`, [id]);
   return rows;
 }
@@ -60,8 +60,8 @@ export async function findComments(db, id) {
       FROM comentarios AS co
       JOIN restautantes AS r ON r.id = co.id_restaurante
      WHERE co.id_restaurante = $1 AND r.eliminado IS NULL
-     ORDER BY co.id ASC LIMIT 100`, [id]);
-  return rows;
+     ORDER BY co.id DESC LIMIT 100`, [id]);
+  return rows.reverse();
 }
 
 

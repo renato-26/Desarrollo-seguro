@@ -8,6 +8,8 @@ node_modules/
 playwright-report/
 test-results/
 coverage/
+frontend/dist/
+.superpowers/
 *.log
 
 # Credenciales y claves privadas locales

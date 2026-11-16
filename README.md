@@ -1,138 +1,76 @@
-# EVA 3 — Autenticación local (tercera iteración)
+﻿# pnkSecurity — EVA 3
 
-Se implementó autenticación Argon2id con sesiones en PostgreSQL. Para activar una cuenta existente, primero aplicar `npm run db:migrate`, después ejecutar `node --env-file=.env scripts/set-user-password.js 1` e ingresar una contraseña privada nueva en la terminal. El frontend original conserva el formulario de acceso. Ver `docs/EVA3-autenticacion.md`. El envío de comentarios autenticado sigue pendiente.
+Aplicación React + Vite, Express MVC y PostgreSQL. Rama de trabajo: `feature/fullstack-mvc`.
 
----
+**Entrega local React + CRUD completa.** Para instalar en un equipo nuevo, seguir la [GUIA_COMPANERO_EVA3.txt](GUIA_COMPANERO_EVA3.txt), con requisitos, credenciales propias, comandos DEV/QA, primer administrador y continuidad del equipo.
 
-# EVA 3 — Frontend original conservado, backend MVC con Node.js y PostgreSQL
+La [validación de publicación](docs/EVA3-publicacion.md) aprobó 49 unitarias, 3 pruebas HTTP QA de solo lectura y build Compose auditado. No modificó las bases ni actualizó los servicios DEV/QA. El [cierre operativo anterior](docs/EVA3-estado-final.md) conserva la evidencia histórica de 82 ejecuciones de aceptación, incluidas integración y CRUD E2E en QA; estas suites con escritura no se repitieron para publicar.
 
-**Actualización (iteración 2):** se recuperó el diseño y los recursos del `pnkSecurity/index.php` de la rama `main`: logotipos, colores, fondo, destacados, pestañas de cartas, categorías, selección de productos y sección de comentarios. La presentación ahora funciona con JavaScript y consulta el backend Express/PostgreSQL; no se ejecuta PHP. El carrito se guarda temporalmente en la sesión del navegador. El inicio de sesión y la escritura de comentarios **siguen pendientes de migración segura**. Ver `docs/EVA3-frontend-original.md`.
+## Acceso local
 
-**Ejecución local ya comprobada previamente (backend versión 1):** en Git Bash, `PORT=3100 npm start` y abrir `http://127.0.0.1:3100/?id=1`. El puerto 3000 estaba ocupado por Live Preview en el PC; apagar Live Preview para evitar exposición de archivos del repositorio. Ejecutar `npm test` después de instalar la iteración 2 y verificar el aspecto visual en el navegador.
+| Entorno | Carta | Administración | PostgreSQL |
+| --- | --- | --- | --- |
+| DEV | http://127.0.0.1:3101/carta/1 | http://127.0.0.1:3101/admin/login | 127.0.0.1:5433 / pnk_security |
+| QA | http://127.0.0.1:3201/carta/1 | http://127.0.0.1:3201/admin/login | 127.0.0.1:5434 / pnk_security_qa |
 
-**Rutas:** `/` (restaurante 1 predeterminado), `/?id=N`, `/carta/N`, `/carrito/N`, `/api/health`, `/api/restaurantes`, `/api/restaurantes/:id/carta`, `/api/restaurantes/:id/comentarios`.
+Las credenciales y los datos particulares de cada instalación no se publican. En un entorno nuevo, el script `scripts/create-admin.js` crea exclusivamente una cuenta administrativa nueva mediante JSON por stdin, con identidad y contraseña propias; no eleva una cuenta existente. La guía TXT incluye el procedimiento. Las cuentas de fixtures QA se desactivan al terminar las suites completas.
 
----
+## Funcionalidad
 
-# EVA 3 — Nueva carta digital funcional (primera iteración)
+- Diseño y recursos originales de pnkSecurity; siete restaurantes, cartas, categorías, platos, imágenes, destacados y precios CLP.
+- Carrito por restaurante en `sessionStorage`, login/logout y comentarios persistidos con texto escapado.
+- Administración de restaurantes, cartas, categorías, productos y usuarios; edición, orden, disponibilidad, roles, asignaciones y desactivación lógica.
+- Dashboard real desde PostgreSQL; autorización de origen y destino en Express y transacciones para escrituras.
+- Argon2id, sesiones PostgreSQL, CSRF, consultas parametrizadas, cookies seguras en producción y API `no-store`.
+- Fotografías existentes JPG/PNG/WebP del mismo restaurante, con firma y tamaño validados. No hay API de subida ni almacenamiento S3 implementados.
 
-**En la iteración inicial:** frontend independiente del PHP original, API de lectura de restaurantes/carta/productos y pruebas de consultas parametrizadas. La autenticación, el carrito y los comentarios aún no se migran. La verificación completa exige Docker + PostgreSQL real. Ver [registro EVA3](docs/EVA3-avance.md).
+## Desarrollo y pruebas
 
-**Acceso (una vez preparado `.env`, ejecutadas las migraciones y el seed):** `http://localhost:3000` o `http://localhost:3000/carta/1`. Para arrancar en Windows, `powershell -ExecutionPolicy Bypass -File .\scripts\start-dev.ps1`. Se requiere Docker Desktop activo.
-
-**Rutas API:** `/api/restaurantes`, `/api/restaurantes/:id/carta`, `/api/health`. Los datos se obtienen exclusivamente de PostgreSQL. Si la DB no está accesible, el frontend informa del problema; no presenta datos ficticios.
-
----
-
-# Desarrollo Seguro — pnkSecurity
-
-Evolución de la carta digital multirrestaurante original a Full Stack MVC, en `feature/fullstack-mvc`, basada en `origin/mejoras` (7d321da). PHP y frontend originales se conservan como referencia histórica. La iteración inicial añadió un frontend nuevo; la segunda conserva el diseño original de `main` y lo conecta a la API. Autenticación y escritura de comentarios siguen pendientes. El carrito actual es solo local al navegador.
-
-## Stack y arquitectura
-
-Node.js 24, Express 5, PostgreSQL 17, Docker Compose, Playwright y GitHub Actions. Cloudflare es la primera plataforma prevista; AWS será una fase posterior. No se ha desplegado ni creado infraestructura.
-
-```text
-backend/src/
-  config/        Variables validadas y pool PostgreSQL
-  routes/        Rutas HTTP
-  controllers/   Traducción de solicitudes/respuestas
-  services/      Lógica de disponibilidad
-  models/        Acceso PostgreSQL
-  views/         Reserva para migración de vistas existentes
-  middleware/    Errores centralizados y 404
-database/
-  migrations/    Esquema versionado
-  seeds/         Datos originales sin contraseñas activas
-tests/           Unitarias HTTP, integración SQL y Playwright
-infrastructure/  Plantillas QA/PROD y plan Cloudflare/AWS
-docs/            Decisiones y estado de migración
-pnkSecurity/     Aplicación original PHP sin cambios
-```
-
-## Instalación local
-
-PostgreSQL se ejecuta mediante Docker Compose con la imagen oficial estable `postgres:17-alpine`. No se utiliza embedded-postgres ni versiones beta. Requisitos: Docker con Compose v2; Node.js 24 para desarrollar y ejecutar las pruebas desde el equipo.
-
-Para ejecutar todo el backend y PostgreSQL, seguir la sección Docker local. Para desarrollar Express con recarga automática usando la misma DB en Docker:
+Requisitos: Node.js 24, Docker Desktop con contenedores Linux y Compose, dependencias del lockfile y Chromium de Playwright. PostgreSQL se mantiene en Docker, con volúmenes persistentes separados. No sobrescribir `.env`, `.env.qa` ni otras credenciales existentes.
 
 ```powershell
-npm ci
-Copy-Item .env.example .env
-# Definir POSTGRES_PASSWORD y completar DATABASE_URL con la misma contraseña.
-# DATABASE_URL usa localhost; codificar caracteres especiales de la contraseña para URL.
-docker compose up -d --wait db
-npm run db:migrate
-npm run db:seed
-npm run dev
+npm.cmd ci
+npm.cmd run build
+npm.cmd test
+node scripts/stack.mjs test qa
+node scripts/maintenance/e2e-qa-docker.mjs
 ```
 
-`GET http://localhost:3000/api/health` responde 200 con `{"status":"ok","database":"up"}` si PostgreSQL acepta `SELECT 1`. Responde 503 con estado `degraded` si la DB no está disponible. El proceso HTTP puede arrancar con DB caída. Esta comprobación no valida la versión del esquema: ejecutar migraciones antes de habilitar tráfico.
+`stack.mjs test qa` fija HTTP temporal 3401 y PostgreSQL QA 5434; hace build, unitarias, integración y Playwright. El último auxiliar comprueba el aislamiento y prueba la imagen QA real en 3201. Ambas suites con escritura son exclusivamente QA. `npm.cmd test` compila y ejecuta sólo unitarias.
 
-La API no sirve PHP ni el dump ni los directorios sensibles del repositorio. Express sirve el frontend adaptado del original en `/` y `/carta/:id`, con recursos estáticos únicamente desde `frontend/public` a través de `/static`. Nunca publicar el PHP o el dump mediante un servidor estático.
+Ejecutar las suites con escritura únicamente en una QA propia autorizada. Para comprobar la QA existente sin fixtures, la guía documenta la selección exclusiva de `tests/e2e/health.spec.js` con la configuración Docker.
 
-## Docker local (DEV)
-
-Si Docker todavía no está instalado, dejar estos pasos pendientes. Instalar e iniciar Docker Desktop con soporte para contenedores Linux y comprobar `docker version` y `docker compose version` antes de continuar. No hace falta instalar PostgreSQL en Windows.
+Para editar React con recarga:
 
 ```powershell
-Copy-Item .env.example .env
-# Definir POSTGRES_PASSWORD en .env. Compose pasa el secreto separado de la URL.
-docker compose config --quiet
-docker compose up --build -d
-docker compose run --rm migrate node database/run.js seed
-Invoke-RestMethod http://localhost:3000/api/health
-docker compose ps
-docker compose logs backend migrate
-docker compose stop
+npm.cmd run dev:frontend
 ```
 
-Compose inicia PostgreSQL con volumen persistente, espera su health check, aplica el esquema y arranca Express. El seed es explícito. Backend usa usuario no root y health check HTTP. DB y HTTP se exponen solo en loopback. `stop` conserva datos. Si cambias la contraseña de `.env` después de inicializar el volumen, PostgreSQL no cambia la contraseña existente automáticamente.
+Vite sirve 5173 con proxy al backend DEV 3101. Para ejecutar Express desde el checkout, compilar primero y configurar explícitamente el entorno/puerto; Docker usa `node backend/src/server.js`, sin cargar archivos de credenciales en la imagen.
 
-Para QA copiar `infrastructure/env/qa.env.example` a `.env.qa`, completar secretos y ejecutar `docker compose --env-file .env.qa up --build -d`. El nombre de proyecto, DB, puertos y volumen quedan separados de DEV. PROD es una plantilla futura, no usar Compose local como despliegue productivo.
+## Docker y migraciones
 
-Para ejecutar la integración SQL desde Node contra PostgreSQL en Docker, usar una base QA desechable:
+El Dockerfile compila React en una etapa, copia `frontend/dist` y recursos históricos y ejecuta Node como usuario `node`. La imagen final contiene dependencias de producción y Argon2 funcional, sin Vite/Playwright ni `.env`.
 
-```powershell
-Copy-Item infrastructure/env/qa.env.example .env.qa
-# Completar POSTGRES_PASSWORD y DATABASE_URL en .env.qa con la misma contraseña.
-docker compose --env-file .env.qa up -d --wait db
-node --env-file=.env.qa --test tests/integration/*.test.js
-docker compose --env-file .env.qa stop
-```
+DEV y QA tienen 001–004 aplicadas. La migración 004 añade roles seguros por defecto, asignaciones restrictivas y disponibilidad; conserva datos anteriores. Los SQL históricos y seeds no cambiaron. Usar siempre `node database/run.js migrate` con la imagen y conexión del entorno correctas; nunca aplicar 004 directamente ni volver a importar seeds para actualizar datos existentes.
 
-Ejecutar este bloque en una terminal sin variables APP_ENV, NODE_ENV o DATABASE_URL exportadas de otro ambiente: las variables de la terminal tienen prioridad sobre el archivo. El seed y las migraciones solo se consideran verificados después de que la integración termine con salida 0 contra PostgreSQL real. Actualmente siguen pendientes de esa validación local.
+Para intervenciones futuras seguir el [procedimiento Compose](docs/superpowers/plans/2026-11-16-compose-update.md) y sus controles, usando capturas y backups nuevos. La ejecución efectiva de este cierre se documenta en [finalización local](docs/superpowers/plans/2026-11-16-local-finalization.md). `tmp/refresh-existing.mjs` está descartado. No usar `docker cp` para actualizar código ni eliminar volúmenes.
 
-## Pruebas y QA asistida por IA
+`compose.yaml` es local DEV/QA. El comando heredado `stack.mjs up prod` se rechaza: ese Compose tiene PostgreSQL local sin TLS. [compose.production.yaml](compose.production.yaml) prepara una aplicación con DB externa, TLS verificado, CA montada y una imagen ya validada; no inicia una DB ni aplica migraciones implícitas. Sólo se validó su sintaxis, no se inició producción.
 
-```powershell
-npm test
-npm run test:e2e
-# PostgreSQL real: usar exclusivamente DB QA vacía/desechable.
-$env:APP_ENV='qa'
-$env:NODE_ENV='test'
-$env:DATABASE_URL='postgresql://pnk_qa:CLAVE@localhost:5433/pnk_security_qa'
-npm run test:db
-$env:EXPECT_DATABASE_UP='1'
-npm run test:e2e
-```
+## Documentación
 
-Playwright usa actualmente su cliente HTTP contra Express real; no requiere descargar navegadores. Sin DATABASE_URL usa una conexión deliberadamente inaccesible y verifica 503. Con DB configurada y `EXPECT_DATABASE_UP=1` exige 200. GitHub Actions prepara PostgreSQL, ejecuta integración y Playwright, audita dependencias y construye la imagen; no publica ni despliega.
+- [Guía completa del compañero, instalación y continuidad](GUIA_COMPANERO_EVA3.txt).
+- [Validación de publicación y conservación de DEV/QA](docs/EVA3-publicacion.md).
+- [Estado final, pruebas, backups y pendientes](docs/EVA3-estado-final.md).
+- [React y panel CRUD](docs/EVA3-react-admin.md).
+- [API REST y permisos](docs/EVA3-api.md).
+- [Arquitectura, sesiones y almacenamiento](docs/EVA3-arquitectura.md).
+- [Preparación AWS: EC2, ALB, Auto Scaling, RDS, TLS y Cloudflare](docs/EVA3-AWS.md).
+- [Revisión independiente y cierre de hallazgos](docs/EVA3-revision-final.md).
 
-La prueba SQL valida conteos, IDs, claves foráneas, secuencias, usuarios sin credenciales y repetición de migraciones/seed. Altera temporalmente el checksum para comprobar rechazo y lo restaura al finalizar: usar exclusivamente una base QA desechable.
+AWS/Cloudflare permanecen sin desplegar. La guía distingue preparación de pruebas reales pendientes, incluidos TLS remoto, proxy, secretos y múltiples instancias. La entrega se publica en `feature/fullstack-mvc`; no integra cambios en `main` ni `mejoras`.
 
-En la siguiente fase, usar IA para proponer casos Playwright a partir de las rutas PHP: selección entre siete restaurantes, aislamiento de cartas/productos, login, carrito, comentarios y regresiones SQLi/XSS/autorización. Revisar las aserciones y usar datos QA sin secretos. Añadir pruebas de navegador cuando las vistas estén conectadas a Express.
+## Equipo
 
-## Estado y pendientes
-
-- Preparados: base MVC, health endpoint, API de lectura de carta/restaurantes, frontend nuevo, esquema/seed PostgreSQL, runner SQL, Docker, plantillas de ambientes y workflow QA.
-- Pendientes: validación real en Docker/PostgreSQL, recuperación/autenticación segura, carrito, comentarios, permisos de escritura por restaurante, protección CSRF y límites de solicitudes para rutas sensibles.
-- Registro EVA3: [nueva interfaz y API de lectura](docs/EVA3-avance.md). Verificación anterior (9/11): [informe histórico](docs/verification.md).
-- Detalles de conversión y credenciales: [migración](docs/migration.md).
-- Publicación futura: [Cloudflare y AWS](infrastructure/README.md).
-
-## Integrantes
-
-- Renato Muñoz
-- Alejandro Tapia
-- Sebastian Larraguibel
+Renato Muñoz · Alejandro Tapia · Sebastian Larraguibel.

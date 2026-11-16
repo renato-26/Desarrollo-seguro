@@ -7,7 +7,7 @@ export function loadConfig(env = process.env) {
   try { url = new URL(env.DATABASE_URL); } catch { /* validation below */ }
   if (!['dev', 'qa', 'prod'].includes(environment)
     || !['development', 'test', 'production'].includes(nodeEnvironment)
-    || (environment === 'prod' && nodeEnvironment !== 'production')
+    || (environment === 'prod' && (nodeEnvironment !== 'production' || sslMode !== 'verify-full'))
     || !Number.isInteger(port) || port < 1 || port > 65535
     || !url || !['postgres:', 'postgresql:'].includes(url.protocol)
     || !url.hostname || url.pathname.length < 2

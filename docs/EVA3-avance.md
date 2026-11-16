@@ -1,3 +1,5 @@
+> Documento histórico: describe una iteración anterior. El estado vigente, las pruebas y las restricciones de operación están en [EVA3-estado-final.md](EVA3-estado-final.md).
+
 # EVA 3 — Registro de implementación de la carta digital MVC
 
 ## Alcance de esta iteración

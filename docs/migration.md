@@ -1,3 +1,5 @@
+> Documento histórico: describe una iteración anterior. El estado vigente, las pruebas y las restricciones de operación están en [EVA3-estado-final.md](EVA3-estado-final.md).
+
 # Migración y decisiones de datos
 
 Origen: `Script_BD/pnk_security.sql` de `origin/mejoras` (7d321da). El dump MySQL se conserva sin cambios. La migración inicial PostgreSQL no ejecuta DROP ni sobrescribe tablas existentes.

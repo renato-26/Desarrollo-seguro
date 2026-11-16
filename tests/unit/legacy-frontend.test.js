@@ -14,7 +14,7 @@ test('frontend conserva nombre, clases, estilos y elementos de la interfaz de pn
     const response = await fetch(base);
     assert.equal(response.status, 200);
     const html = await response.text();
-    for (const pattern of [/PNK.*Carta Digital/i, /Menús Destacados/, /Productos Seleccionados/, /Comentarios/, /food-card|pestanas-cartas/, /legacy\/css\/style\.css/]) {
+    for (const pattern of [/PNK.*Carta Digital/i, /id="root"/, /type="module"/, /legacy\/css\/style\.css/]) {
       assert.match(html, pattern);
     }
     assert.equal((await fetch(base + '/static/legacy/css/style.css')).status, 200);

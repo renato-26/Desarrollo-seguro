@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseEnvFile, configFor } from '../../scripts/stack.mjs';
+import { readFileSync } from 'node:fs';
 
 const env = (kind, db, mode) => ({
   APP_ENV: kind, NODE_ENV: mode, POSTGRES_DB: db, POSTGRES_USER: 'pnk_app',
@@ -42,4 +43,18 @@ test('automatización: rechaza credenciales incongruentes y conexiones externas'
   const external = env('prod','pnk_security_prod','production');
   external.DATABASE_URL = external.DATABASE_URL.replace('127.0.0.1','example.org');
   assert.throws(() => configFor('prod', external), /no coincide/);
+});
+
+test('plantillas DEV/QA coinciden con usuario, base y puertos del automatizador en un clon nuevo', () => {
+  for (const [name, file] of [['dev','../../.env.example'],['qa','../../infrastructure/env/qa.env.example']]) {
+    const template = parseEnvFile(readFileSync(new URL(file,import.meta.url),'utf8'));
+    const localPassword = 'offline-fixture-not-a-real-secret';
+    template.POSTGRES_PASSWORD = localPassword;
+    template.DATABASE_URL = template.DATABASE_URL.replace('CHANGE_ME',encodeURIComponent(localPassword));
+    const cfg = configFor(name,template);
+    assert.equal(template.POSTGRES_USER,'pnk_app');
+    assert.equal(Number(template.PORT),cfg.spec.http);
+    assert.equal(Number(template.DB_PORT),cfg.spec.postgres);
+    assert.equal(Number(cfg.dbUrl.port),cfg.spec.postgres);
+  }
 });

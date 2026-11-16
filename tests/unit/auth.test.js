@@ -27,6 +27,7 @@ test('autenticación rechaza POST sin protección de origen sin consultar DB', a
     assert.equal(cross.status, 403);
     assert.equal(queries, 0);
     const me = await fetch(base + '/api/auth/me');
+    assert.equal(me.headers.get('cache-control'), 'no-store');
     assert.deepEqual(await me.json(), { usuario: null });
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
@@ -57,7 +58,7 @@ test('login correcto genera cookie opaca, /me reconoce sesión y logout la revoc
       body: JSON.stringify({identifier: user.email, password})
     });
     assert.equal(login.status, 200);
-    assert.deepEqual(await login.json(), { usuario: { id: 1, nombre: user.nombre, email: user.email } });
+    assert.deepEqual(await login.json(), { usuario: { id: 1, nombre: user.nombre, email: user.email, rol:'CLIENTE', activo:true, restaurantes:[] } });
     const setCookie = login.headers.get('set-cookie');
     assert.match(setCookie, /pnk_session=[a-f0-9]{64}/);
     assert.match(setCookie, /httponly/i);

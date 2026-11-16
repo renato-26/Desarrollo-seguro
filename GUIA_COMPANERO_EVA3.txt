@@ -1,0 +1,566 @@
+GUIA DE INSTALACION Y CONTINUIDAD — EVA 3 / pnkSecurity
+Repositorio: https://github.com/renato-26/Desarrollo-seguro
+Rama de entrega: feature/fullstack-mvc
+Fecha de revisión: 16-11-2026. Archivo de texto UTF-8.
+
+Esta guía está orientada a Windows con PowerShell y Docker Desktop Linux.
+Los comandos se ejecutan desde la raíz del clon, salvo indicación contraria.
+Los pasos de instalación y las pruebas con escritura son para TU computador y
+tus bases locales nuevas. No ejecutarlos contra las bases de otro integrante.
+La publicación no incluye archivos .env reales, respaldos ni datos particulares
+de la instalación DEV del autor. Los datos semilla académicos sí están versionados.
+
+A. RESUMEN DEL PROYECTO
+======================
+EVA 3 transforma la carta digital pnkSecurity en una aplicación Full Stack MVC
+para el trabajo académico de Desarrollo Seguro. Conserva el diseño original,
+recursos visuales y siete restaurantes del conjunto semilla, con React en vez
+de ejecutar las vistas PHP. El PHP original se conserva como referencia.
+
+Implementado: carta pública, restaurantes, cartas/categorías, productos,
+imágenes, destacados, precios CLP, carrito por restaurante, autenticación,
+comentarios persistentes y panel administrativo. El panel incluye CRUD lógico
+de restaurantes, cartas, categorías, productos y usuarios, roles/asignaciones,
+orden, disponibilidad y dashboard de PostgreSQL. No existe borrado físico por
+la API administrativa: se desactiva y se filtra la publicación.
+
+Stack: Node.js 24, npm, React/Vite, Express 5, PostgreSQL 17, Argon2id, Docker
+Compose y Playwright/Chromium. Capas en backend/src: rutas, controladores,
+servicios, modelos y configuración. Frontend en frontend/src.
+
+AWS pendiente: crear infraestructura autorizada EC2/ALB/Auto Scaling/RDS,
+integrar secretos, configurar CA/TLS, proxy/DNS/HTTPS/Cloudflare y verificar
+operación real, múltiples instancias y recuperación. No hay despliegue AWS.
+Consultar docs/EVA3-AWS.md y docs/EVA3-arquitectura.md.
+
+B. REQUISITOS PREVIOS
+====================
+Versiones comprobadas en el equipo de cierre (no requisitos de parche exacto):
+  Node.js 24.22.3, npm 11.4.2, Git 2.51.0.windows.1.
+  Docker Engine 29.9.3, Compose 5.7.0, contenedores Linux.
+  PostgreSQL postgres:17-alpine, únicamente en Docker para desarrollo local.
+  Del lockfile: React/React DOM 19.3.1, Vite 8.3.8, Express 5.3.0,
+  Argon2 0.45.2, pg 8.23.1 y Playwright 1.65.0.
+
+package.json exige Node >=24 y <25. Selecciona Node 24 en la descarga oficial,
+aunque el sitio ofrezca otra versión más reciente por defecto. Usa npm ci
+para instalar las versiones exactas de package-lock.json. No hace falta
+instalar PostgreSQL en Windows ni cambiar las versiones del lockfile.
+
+Instaladores/documentación oficiales, consultados para esta guía:
+  Git: https://git-scm.com/install/windows
+  VS Code: https://code.visualstudio.com/docs/setup/windows
+  Node: https://nodejs.org/en/download
+  Docker: https://docs.docker.com/desktop/setup/install/windows-install/
+  WSL2: https://learn.microsoft.com/en-us/windows/wsl/install
+  Navegadores Playwright: https://playwright.dev/docs/browsers
+
+Instala VS Code estable. No se exige un parche del editor. Las extensiones son
+opcionales: Container Tools de Microsoft requiere VS Code 1.109 o posterior.
+  WSL: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl
+  Container Tools: https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers
+  Playwright Test: https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright
+No generes nuevos Dockerfile/Compose desde una extensión: el proyecto ya los tiene.
+
+En Windows habilita virtualización y usa el backend WSL2 de Docker Desktop.
+Si falta WSL, sigue la guía Microsoft; wsl --install puede requerir administrador
+y reiniciar. No es necesario cambiar ni reinstalar un WSL que ya funciona.
+El proyecto puede trabajarse con Node/Git de Windows y Docker Linux sobre WSL2.
+No reutilices node_modules entre Windows, WSL y una imagen Linux: Argon2 es nativo.
+
+Comprobar instalaciones:
+  git --version
+  code --version
+  node --version
+  npm.cmd --version
+  docker version
+  docker compose version
+  wsl --status
+  wsl --version
+
+Usa Chrome/Edge/Firefox actual para navegar. Las pruebas automatizadas usan
+Chromium instalado por Playwright, no dependen del Chrome personal instalado.
+En Linux/macOS se usa npm en lugar de npm.cmd; los bloques PowerShell de esta
+guía requieren PowerShell, y los auxiliares .ps1 están pensados para Windows.
+
+C. DESCARGA DEL PROYECTO
+=======================
+En una carpeta de trabajo propia, preferentemente fuera de sincronizadores:
+  git clone --branch feature/fullstack-mvc --single-branch https://github.com/renato-26/Desarrollo-seguro.git
+  cd Desarrollo-seguro
+  git switch feature/fullstack-mvc
+  git branch --show-current
+  git remote -v
+  code .
+  npm.cmd ci
+  npm.cmd ls --depth=0
+
+El remoto debe ser el indicado y la rama feature/fullstack-mvc. Si el repositorio
+requiere acceso, utiliza tu cuenta autorizada y el gestor de credenciales de Git;
+no pongas tokens en la URL ni en un archivo del proyecto. npm ci usa el lockfile
+y reinstala node_modules; no lo ejecutes durante otro build/test concurrente.
+
+D. CONFIGURACION DE AMBIENTES
+============================
+No se descargan los .env de otro integrante. Crea sólo archivos que no existan:
+
+  if (Test-Path -LiteralPath .env) { throw '.env ya existe; conservarlo' }
+  Copy-Item -LiteralPath .env.example -Destination .env
+  if (Test-Path -LiteralPath .env.qa) { throw '.env.qa ya existe; conservarlo' }
+  Copy-Item -LiteralPath infrastructure/env/qa.env.example -Destination .env.qa
+  code .env .env.qa
+
+Los throw anteriores son controles de no sobrescritura, no órdenes de borrar.
+Si ya existen los archivos, continúa tras revisarlos privadamente; no copies
+encima. Nunca adjuntes su contenido a Git, issues, capturas o mensajes.
+
+Variables locales de las plantillas corregidas:
+  DEV: APP_ENV=dev, NODE_ENV=development, PORT=3101, DB_PORT=5433,
+       POSTGRES_DB=pnk_security, POSTGRES_USER=pnk_app, DB_SSL=disable.
+  QA:  APP_ENV=qa, NODE_ENV=test, PORT=3201, DB_PORT=5434,
+       POSTGRES_DB=pnk_security_qa, POSTGRES_USER=pnk_app, DB_SSL=disable.
+
+Para cada entorno crea una contraseña propia, aleatoria, diferente de la del
+otro entorno y sin usar identidades/contraseñas del equipo. Un gestor de
+contraseñas puede generar 32 o más caracteres alfanuméricos. Escribe el valor
+privadamente en POSTGRES_PASSWORD y sustituye CHANGE_ME en DATABASE_URL por
+la MISMA contraseña. El usuario de la URL debe ser pnk_app. Con contraseñas
+alfanuméricas no hace falta escape especial; otros caracteres deben codificarse
+como componente de URL, sin imprimir el secreto en argumentos de comandos.
+
+Las URLs host de las plantillas terminan en:
+  DEV: @127.0.0.1:5433/pnk_security
+  QA:  @127.0.0.1:5434/pnk_security_qa
+No copies esas terminaciones sin usuario y contraseña: completa la URL existente.
+Desde los contenedores Compose usa db:5432 y entrega PGUSER/PGPASSWORD por entorno;
+no usa el puerto host para comunicarse con PostgreSQL dentro de la red Docker.
+
+El automatizador valida nombres, pnk_app y congruencia de URL/contraseña, y fija
+3101/5433 para DEV y 3201/5434 para QA. Trabaja en una terminal nueva sin variables
+APP_ENV/DATABASE_URL/COMPOSE_PROJECT_NAME heredadas de otro proyecto. No cambies
+puertos arbitrariamente: hay contratos de scripts y pruebas que habría que adaptar.
+
+PROD: infrastructure/env/prod.env.example es un contrato orientativo con valores
+incompletos. Si necesitas una copia privada futura y aún no existe:
+  if (Test-Path -LiteralPath .env.prod) { throw '.env.prod ya existe; conservarlo' }
+  Copy-Item -LiteralPath infrastructure/env/prod.env.example -Destination .env.prod
+
+No inventes endpoint/usuario/contraseña RDS ni ejecutes esa plantilla incompleta.
+compose.production.yaml requiere APP_IMAGE validada en QA, DATABASE_URL externa
+completa y secreta, RDS_CA_BUNDLE existente/legible y, cuando corresponda,
+BIND_ADDRESS/PORT. Fija APP_ENV=prod, NODE_ENV=production y DB_SSL=verify-full.
+No incluye un servicio DB, build ni migraciones implícitas. No basta copiar
+.env.prod para desplegar. stack.mjs up prod está bloqueado deliberadamente.
+
+E. INSTALACION CON DOCKER
+========================
+Estos comandos de inicio son para una instalación NUEVA con tus archivos ya
+completados. En una instalación con datos, revisar antes backups, imagen de
+recuperación y docs/superpowers/plans/2026-11-16-compose-update.md. No ejecutar
+tmp/refresh-existing.mjs ni copiar código dentro de contenedores.
+
+Inicia Docker Desktop y comprueba contenedores Linux:
+  docker info --format '{{.OSType}}'
+
+Primera instalación DEV:
+  node scripts/stack.mjs up dev
+Primera instalación QA, independiente:
+  node scripts/stack.mjs up qa
+
+up construye imágenes, inicia PostgreSQL con volumen propio, ejecuta migrate,
+inicia Express y aplica seeds locales pendientes. Finaliza con comprobación de
+salud/catálogo. Se crean proyectos pnksecurity-dev y pnksecurity-qa, con sus redes
+y volúmenes separados. Si falla, lee el error antes de repetir o alterar nada.
+
+Estado y salud de sólo lectura:
+  node scripts/stack.mjs status dev
+  node scripts/stack.mjs status qa
+  node scripts/stack.mjs check dev
+  node scripts/stack.mjs check qa
+
+Para los comandos avanzados siguientes, abre una PowerShell con política sólo
+de proceso y carga funciones desde la raíz (no cambia políticas permanentes):
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -NoExit
+  . ./scripts/maintenance/compose-context.ps1
+
+Validar configuración sin imprimir credenciales:
+  Invoke-PnkCompose -Target dev -ComposeArgs @('config','--quiet')
+  Invoke-PnkCompose -Target qa -ComposeArgs @('config','--quiet')
+
+Verificar PostgreSQL QA (para DEV usa Target dev y DB pnk_security):
+  Invoke-PnkCompose -Target qa -ComposeArgs @('exec','-T','db','pg_isready','-U','pnk_app','-d','pnk_security_qa')
+  Invoke-PnkCompose -Target qa -ComposeArgs @('exec','-T','db','psql','-X','-v','ON_ERROR_STOP=1','-U','pnk_app','-d','pnk_security_qa','-c','SELECT current_database(), version();')
+
+Consultar logs, sin mostrar docker inspect completo ni compose config completo:
+  Invoke-PnkCompose -Target dev -ComposeArgs @('logs','--tail','100','backend','migrate','db')
+  Invoke-PnkCompose -Target qa -ComposeArgs @('logs','--tail','100','backend','migrate','db')
+
+Ejecutar migraciones del entorno, con imágenes ya construidas y DB encendida:
+  Invoke-PnkCompose -Target qa -ComposeArgs @('run','--no-deps','--pull','never','-T','migrate','node','database/run.js','migrate')
+  Invoke-PnkCompose -Target dev -ComposeArgs @('run','--no-deps','--pull','never','-T','migrate','node','database/run.js','migrate')
+En datos existentes se hace backup/captura antes, se limita la actividad de
+escritura y se compara después; no aplicar archivos SQL a mano. Las migraciones
+pueden adquirir bloqueos; planificar ventana antes de usarlas sobre datos propios.
+
+Detener servicios de forma segura, conservando contenedores y volúmenes:
+  Invoke-PnkCompose -Target qa -ComposeArgs @('stop')
+  Invoke-PnkCompose -Target dev -ComposeArgs @('stop')
+Reanudar los contenedores existentes sin reconstruir:
+  Invoke-PnkCompose -Target dev -ComposeArgs @('start','db','backend')
+  Invoke-PnkCompose -Target qa -ComposeArgs @('start','db','backend')
+Después ejecuta check y espera que PostgreSQL termine de iniciar. No usar start
+para instalar servicios que todavía no existen. No borrar volúmenes para reparar
+credenciales o migraciones. No hay comandos destructivos recomendados en esta guía.
+
+F. EJECUTAR LA APLICACION
+========================
+DEV:
+  Carta: http://127.0.0.1:3101/carta/1
+  Admin: http://127.0.0.1:3101/admin/login
+  Salud: http://127.0.0.1:3101/api/health
+  PostgreSQL host:127.0.0.1:5433, DB pnk_security.
+QA:
+  Carta: http://127.0.0.1:3201/carta/1
+  Admin: http://127.0.0.1:3201/admin/login
+  Salud: http://127.0.0.1:3201/api/health
+  PostgreSQL host:127.0.0.1:5434, DB pnk_security_qa.
+
+Salud devuelve 200 con status ok/database up o 503 degraded/database down.
+No comprueba el historial SQL; migrar antes de habilitar tráfico. No se publica
+un servicio PROD en 3301 funcional: la configuración RDS futura es independiente.
+
+Para iniciar sesión usa una cuenta activa propia creada según G. Las dos cuentas
+históricas del seed no incluyen una contraseña utilizable ni privilegios admin.
+No existe registro público ni contraseña compartida de demostración.
+
+React con recarga, opcional con backend DEV ya funcionando:
+  npm.cmd run dev:frontend
+Abrir http://127.0.0.1:5173; Vite hace proxy al backend DEV 3101.
+Build del checkout:
+  npm.cmd run build
+Express sirve frontend/dist, no ejecuta PHP. No usar Vite como servidor productivo.
+
+G. PRIMER ADMINISTRADOR
+======================
+En TU instalación nueva, tras migrar y arrancar el backend, crea una cuenta con
+email nuevo mediante scripts/create-admin.js. La contraseña se recibe por stdin,
+con mínimo 12 y máximo 1024 caracteres; no se pasa en argumentos ni se devuelve.
+Usa Argon2id. Crea ADMIN_GENERAL y rechaza un email existente: NO eleva ni cambia
+una cuenta histórica. Repetir con el mismo email no recupera ni reinicia contraseña.
+
+Bloque PowerShell interactivo; elegir dev o qa propios. No ejecutarlo en el
+equipo/DB de otro integrante. No se crean cuentas sólo por clonar o correr seeds.
+
+  $target = Read-Host 'Entorno local (dev o qa)'
+  if ($target -notin @('dev','qa')) { throw 'Entorno invalido' }
+  $nombre = Read-Host 'Nombre del nuevo administrador'
+  $email = Read-Host 'Correo nuevo del administrador'
+  $secure = Read-Host 'Contrasena privada (minimo 12 caracteres)' -AsSecureString
+  $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+  $previousEncoding = $global:OutputEncoding
+  try {
+      $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+      if ($plain.Length -lt 12 -or $plain.Length -gt 1024) { throw 'Longitud invalida' }
+      $payload = @{nombre=$nombre;email=$email;password=$plain} | ConvertTo-Json -Compress
+      $global:OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+      $container = "pnksecurity-$target-backend-1"
+      $payload | docker exec -i $container node scripts/create-admin.js
+      if ($LASTEXITCODE -ne 0) { throw 'No se creo la cuenta; revisar datos/entorno/email nuevo' }
+  } finally {
+      $global:OutputEncoding = $previousEncoding
+      [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+      $plain = $null
+      $payload = $null
+      $secure = $null
+  }
+
+El secreto queda sólo en memoria durante el envío, no en un archivo o comando
+literal del historial. UTF-8 evita corrupción de nombres/contraseñas al pasar por
+PowerShell. La limpieza reduce referencias; no promete borrado de memoria de .NET.
+El backend usa su conexión interna correcta; no se confunden puertos host DEV/QA.
+Al terminar, iniciar sesión en /admin/login del entorno elegido. No incluyas
+capturas de la entrada ni publiques identidades personales del equipo.
+
+H. BASE DE DATOS Y RESPALDOS
+===========================
+Relaciones: restautantes -> cartas -> categorias -> items; restautantes enlaza
+direcciones. Se conserva la grafía histórica restautantes/restautantes_id.
+usuarios guarda estado/rol/hash; usuario_restaurantes asigna administradores;
+comentarios relaciona restaurante y usuario; auth_sessions/auth_attempts soportan
+sesiones opacas y bloqueo de intentos. No hay un ORM ni passwords en respuestas.
+
+Migraciones de database/migrations:
+  001_initial_schema.sql: tablas comerciales y relaciones.
+  002_auth_sessions.sql: sesiones y control de intentos.
+  003_comments_user.sql: autor y fecha, preservando comentarios anteriores.
+  004_admin_roles.sql: roles, asignaciones y disponibilidad incremental.
+004 usa CLIENTE y disponible=true por defecto, NOT NULL, CHECK y FK restrictivas.
+No concede privilegios a cuentas existentes ni borra registros/secuencias.
+
+El runner registra SHA-256 en schema_history, usa advisory lock y transacción por
+archivo. Repetir archivos ya aplicados con checksum idéntico los omite. Nunca
+edites SQL aplicado, borres historial o fuerces un checksum para ocultar un error.
+Una migración anterior puede haber terminado si una posterior falla: inspeccionar.
+
+Seeds database/seeds/001_original_data.sql y 002_corregir_fotos_catalogo.sql:
+importan el conjunto académico original y correcciones de fotos. Tienen historial
+separado y no se reimportan en cada inicio. up dev/qa aplica sólo los pendientes.
+No son una copia de la DB privada DEV del autor ni se ejecutan automáticamente en
+producción. No aplicar seeds manualmente para "reparar" datos particulares.
+
+Respaldo custom QA de sólo lectura, con nombre nuevo y verificación de cabecera
+e índice. Para DEV cambiar qa por dev y el nombre, verificando antes el objetivo:
+  $stamp = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')
+  $backup = "tmp/backup-qa-$stamp.dump"
+  node scripts/maintenance/backup-database.mjs qa $backup
+  if ($LASTEXITCODE -ne 0) { throw 'Backup no validado; detener' }
+  Get-FileHash -Algorithm SHA256 -LiteralPath $backup
+
+Anota el SHA-256 y conserva una copia privada fuera del repositorio. El auxiliar
+rechaza sobrescribir y sólo permite tmp/. No usa la conversión de texto de
+PowerShell para pg_dump binario. Índice legible y hash NO prueban una restauración
+completa. No se restaura automáticamente: el ensayo debe ser en destino aislado,
+con procedimiento y aprobación específicos. No subir dumps ni capturas de datos.
+
+I. REACT Y CRUD ADMINISTRATIVO
+============================
+Login/logout comparten Argon2id, cookie de sesión opaca y PostgreSQL. La API exige
+X-PNK-Request:1 y origen permitido en escrituras; React los gestiona. Las sesiones
+revisan estado, rol y asignaciones vigentes. API no-store, cookie HttpOnly/SameSite
+y Secure en producción. El correo tiene prioridad sobre un nombre y se rechazan
+nombres ambiguos en login.
+
+Dashboard: totales/activos reales filtrados por alcance. Restaurantes: nombre,
+contacto/dirección, consulta, edición y estado. Cartas/categorías: relaciones,
+orden y publicación. Productos: precio entero CLP, descripción/observaciones,
+fotografía existente, orden, destacado, disponibilidad y estado. Usuarios:
+creación, edición, roles/asignaciones, desactivación y cambio privado de password.
+Cambiar password/desactivar revoca sesiones. No se devuelve el hash.
+
+ADMIN_GENERAL gestiona todos los recursos y usuarios. ADMIN_RESTAURANTE sólo
+restaurantes asignados y sus descendientes, sin crear restaurantes ni gestionar
+usuarios. CLIENTE no entra a administración. Express valida padre original y
+destino; ocultar una pantalla no reemplaza autorización del servidor.
+
+Carrito: sessionStorage por restaurante, recarga, eliminación y total; sin orden
+persistida/pago/reserva de stock. Comentarios: autenticados, persistentes, texto
+escapado y últimos 100 en orden cronológico, sin paginación. Carta pública excluye
+productos no disponibles/desactivados y padres desactivados.
+
+Fotos: asociación a JPG/JPEG, PNG o WebP existentes del MISMO restaurante,
+extensión/firma real y máximo 5 MiB. Sin URLs remotas, SVG, data inline ni traversal.
+No hay upload API/S3: para un restaurante nuevo sin carpeta propia se admite no
+tener foto. Los recursos originales se distribuyen en la imagen y hay fallback.
+
+Rutas de código: frontend/src/admin/resources.js, ResourcePage.jsx y ResourceForm.jsx;
+backend/src/routes/admin.routes.js, controllers/admin.controller.js,
+services/admin.service.js y models/admin.model.js. Contrato: docs/EVA3-api.md.
+No se usa PHP como backend ni se expone el árbol completo por HTTP.
+
+J. PRUEBAS Y VERIFICACION
+========================
+Instalar el navegador exacto de Playwright tras npm ci:
+  npx.cmd playwright install chromium
+En un Linux compatible, la documentación oficial contempla --with-deps para las
+bibliotecas del SO; no copiar instalaciones de Chromium/node_modules entre SO.
+
+Build y unitarias, sin escribir en una DB real:
+  npm.cmd run build
+  npm.cmd test
+
+La suite completa y consistente para TU QA (crea/desactiva fixtures):
+  node scripts/stack.mjs test qa
+Compila React, ejecuta unitarias, integración en 5434 y E2E con Express temporal 3401.
+El servidor temporal se cierra al terminar. No usar DEV para pruebas con escritura.
+
+Integración independiente, sólo con la plantilla QA correcta en una terminal
+limpia y sin DATABASE_URL/APP_ENV exportados de otro entorno:
+  node --env-file=.env.qa --test tests/integration/database.test.js
+Comprueba la DB real antes de escribir, historial, relaciones, instalación limpia
+revertida y regresiones. No ejecutar npm run test:db suponiendo que selecciona QA:
+ese script genérico carga .env, y no sustituye la selección explícita anterior.
+
+Playwright sobre checkout, sólo con DB QA y frontend/dist ya compilado:
+  $env:EXPECT_DATABASE_UP = '1'
+  node --env-file=.env.qa node_modules/playwright/cli.js test
+  Remove-Item Env:EXPECT_DATABASE_UP
+
+Playwright sobre la imagen Docker QA real en 3201, con aislamiento comprobado antes
+de escribir y sin servidor temporal:
+  node scripts/maintenance/e2e-qa-docker.mjs
+
+Smoke HTTP sólo GET contra Docker QA, sin fixtures ni cambios SQL:
+  $env:EXPECT_DATABASE_UP = '1'
+  node node_modules/playwright/cli.js test --config scripts/maintenance/playwright.qa-docker.config.mjs tests/e2e/health.spec.js
+  Remove-Item Env:EXPECT_DATABASE_UP
+Esos tres casos verifican salud, archivos internos no expuestos y build/assets.
+No seleccionar react-admin.spec.js suponiendo lectura: su beforeAll crea fixtures.
+
+Verificar Docker sin mutar datos:
+  node scripts/stack.mjs status dev
+  node scripts/stack.mjs status qa
+  node scripts/stack.mjs check dev
+  node scripts/stack.mjs check qa
+En la PowerShell con funciones de E, config --quiet valida Compose sin revelar
+variables. El build multietapa comprueba dependencias e incluye frontend/dist.
+No confundir npm run build del host con reconstruir una imagen o actualizarla.
+
+Resultado válido: proceso con salida 0 y resumen de aprobadas, sin fallidas ni
+omisiones imprevistas. Salida distinta de 0 requiere diagnóstico; no eliminar
+datos ni cambiar aserciones para fabricar un resultado verde. Revisar los logs.
+Reportes locales: playwright-report/index.html y playwright-report/qa-docker/index.html;
+capturas en test-results/. No subirlos si contienen datos/sesiones particulares.
+
+K. FLUJO DE TRABAJO EN GITHUB
+===========================
+Antes de actualizar un clon propio, comprobar cambios pendientes y no pisarlos:
+  git status --short
+  git diff
+  git fetch origin
+Con feature/fullstack-mvc limpio:
+  git pull --ff-only origin feature/fullstack-mvc
+Si no es fast-forward, detener y coordinar divergencia; no usar force push ni
+reset destructivo para resolverlo. Guarda/revisa tu trabajo antes de integrar.
+
+Para tu próxima tarea desde la rama de entrega actualizada:
+  git switch -c feature/mi-tarea
+Realiza cambios, ejecuta las pruebas pertinentes y revisa el diff. Ejemplo de
+commit si cambiaste la guía (selecciona explícitamente tus archivos reales):
+  git add -- GUIA_COMPANERO_EVA3.txt
+  git diff --cached --check
+  git diff --cached --stat
+  git commit -m "docs: actualiza guia del equipo"
+  git push -u origin feature/mi-tarea
+
+No agregues archivos privados aunque Git los ignore. Revisa el índice antes del
+commit; no uses un agregado masivo sin inspección. Coordina Pull Request/revisión
+con el equipo, sin sobrescribir main/mejoras ni hacer merges unilateralmente.
+Cada integrante usa su identidad Git y acceso propio, sin compartir tokens.
+
+L. PROBLEMAS FRECUENTES
+======================
+Docker Desktop apagado: abrirlo y esperar Engine Linux; docker version debe
+mostrar cliente y servidor. No basta tener instalado el CLI. Usar contexto local.
+
+WSL2: comprobar wsl --status/--version y requisitos de virtualización de Docker.
+Seguir la guía Microsoft para instalación/actualización; reiniciar si lo pide.
+No desregistrar distribuciones ni borrar datos para reparar un fallo de inicio.
+
+Puerto ocupado: inspeccionar, por ejemplo en PowerShell:
+  Get-NetTCPConnection -LocalPort 3101,3201,5433,5434 -ErrorAction SilentlyContinue
+Identificar al propietario y coordinar; no matar procesos desconocidos ni cambiar
+puertos en un solo archivo. Las pruebas usan también 3401 y Vite 5173.
+
+PostgreSQL inaccesible: status, logs y pg_isready de E. En host es 127.0.0.1 y puerto
+5433/5434; dentro de Docker es db:5432. DATABASE_URL debe llevar DB/usuario correctos.
+Una URL con localhost:5432 del equipo de otra persona no sirve automáticamente.
+
+Password desincronizado con un volumen: POSTGRES_PASSWORD inicializa una base
+nueva; cambiar .env no cambia la contraseña guardada en una base existente.
+No borres el volumen ni reimportes seeds. Conserva backup, recupera la configuración
+correcta y acuerda una rotación controlada si es necesaria. No se rota en este flujo.
+
+npm/Argon2: usar Node 24, npm ci y una sola plataforma por node_modules. Para
+errores de ExecutionPolicy de npm.ps1 en Windows usar npm.cmd/npx.cmd. Si falta
+binario nativo o build tools, revisar error y documentación de dependencias;
+Docker instala sus dependencias Linux separadamente, no copia node_modules host.
+
+Migración/checksum distinto: no editar SQL aplicado ni schema_history. Registrar
+el error, comparar archivos/versiones y diseñar una migración incremental nueva.
+Si hay bloqueo SQL, revisar sesiones/ventana; no repetir indefinidamente ni borrar.
+
+Variables: no duplicarlas, no poner comentarios en la misma línea del secreto,
+comprobar APP_ENV/NODE_ENV/DB y coherencia de contraseña/URL. Las variables del
+proceso pueden prevalecer sobre --env-file: abrir terminal limpia. No imprimir
+compose config completo ni docker inspect completo, que pueden revelar secretos.
+
+Playwright: instalar Chromium para la versión del lockfile; no falta Chrome si
+falla browser executable not found. Si 3401 está ocupado, cerrar el servidor de
+desarrollo propio antes de ejecutar checkout E2E. QA debe responder saludable.
+Una advertencia NO_COLOR/FORCE_COLOR no equivale a una aserción fallida.
+
+PowerShell/JSON: no construir JSON mezclando comillas de --format de Docker;
+capturar desde Node y serializar. No redirigir pg_dump binario con PowerShell
+antiguo; usar el auxiliar de backup. Los mensajes stderr se evalúan con exitcode,
+sin asumir que toda advertencia es un fallo del proceso.
+
+Login: verificar el entorno/URL, cuenta activa con contraseña propia y sin cambio
+pendiente. El seed no habilita credenciales históricas. Tras varios fallos puede
+haber bloqueo temporal; no borrar auth_attempts para saltarlo. Email de bootstrap
+ya existente se rechaza; no cambia rol ni contraseña. ADMIN_RESTAURANTE no ve
+usuarios ni recursos no asignados, que es comportamiento esperado.
+
+PROD: si stack up prod falla indicando TLS externo, es deliberado. No desactivar
+TLS para arreglarlo. Usar la preparación productiva con CA/secretos reales sólo
+en la fase autorizada; una imagen local del autor no está disponible en tu Docker
+por clonar Git. Construye y verifica tu imagen y publica un digest cuando proceda.
+
+M. PREPARACION AWS
+==================
+Arquitectura propuesta: navegador HTTPS -> Cloudflare opcional -> ALB -> EC2
+privadas con Docker/Auto Scaling -> Amazon RDS PostgreSQL privado mediante TLS
+verificado. Imagen idéntica entre instancias, migrador separado antes del tráfico,
+secrets por IAM/Secrets Manager, logs/alertas en CloudWatch y control de redes.
+
+Preparado localmente: React compilado en Docker, proceso no root, health check,
+pool PostgreSQL/TLS, sesiones/intentos en PostgreSQL compartido, migraciones
+incrementales y compose.production.yaml sin servicio DB. NODE_EXTRA_CA_CERTS
+permite extender la confianza de Node con la CA montada; exige prueba real de
+hostname/certificado. DATABASE_URL no admite parámetros SSL que sustituyan la
+configuración. No hay lectura automática de Secrets Manager ni variables inventadas.
+
+Con varias EC2, sesiones no dependen de memoria local ni necesitan afinidad por
+esa razón; falta probar el flujo cruzado real. Debe configurarse la confianza
+de proxy/IP, host público para CSRF, HTTPS/cookies y bypass de caché API/admin.
+No existe TRUST_PROXY configurable actualmente. Analizar health/ASG ante caída
+compartida de RDS para no reemplazar todas las instancias por el mismo fallo.
+
+Las fotografías existentes están dentro de la imagen y son iguales por release.
+No hay uploads. Si se requiere subida, implementar API/validación y almacenamiento
+compartido como S3 privado: no guardar archivos persistentes sólo en una EC2
+efímera. El código actual tampoco implementa SDK/URLs S3 por añadir una variable.
+
+Pendiente real: cuenta/región/presupuesto/dominio, VPC/SG/roles, RDS/CA/TLS,
+secretos, registro de imágenes/digests, EC2/ALB/ASG, Cloudflare/DNS/certificados,
+observabilidad, ensayo de recuperación y pruebas completas por el dominio.
+No hay recursos AWS/Cloudflare creados en esta entrega ni permisos implícitos
+para generarlos. Checklist y comandos futuros en docs/EVA3-AWS.md.
+
+N. ESTADO FINAL Y CONTINUIDAD
+===========================
+El cierre operativo previo validó DEV/QA con la misma imagen y PostgreSQL
+preservado: 48 unitarias + 4 integración + 10 E2E checkout + 10 E2E Docker QA,
+más 10 E2E QA posteriores a DEV = 82 ejecuciones de aceptación sin fallos.
+Son 62 casos distintos, con los diez E2E repetidos; no 82 pruebas únicas.
+
+Esta publicación añade una regresión de plantillas (49 unitarias en total),
+documentación y controles de instalación. Sus validaciones nuevas se registran
+en docs/EVA3-publicacion.md. Integración/CRUD con escritura no se repiten contra
+las DB existentes durante la publicación. Los comandos de instalación/admin de
+esta guía se comprobaron contra scripts y mediante pruebas offline; no se
+ejecutaron aquí para recrear entornos ni crear cuentas. Un equipo nuevo tiene
+su propio conjunto semilla y cuentas, no las bases privadas del autor.
+
+Se resolvieron errores de JSON PowerShell, recuperación de aplicación, captura
+de logs, huella de informes, prioridad email/nombre, comentarios recientes,
+TLS/no-store y congruencia de plantillas. Persisten los límites descritos para
+AWS, upload/pedidos y mejoras menores de retención/direcciones/logging.
+
+Orden sugerido al continuar: instalar herramientas -> clonar rama -> npm ci ->
+crear tus .env -> iniciar DEV/QA propios -> crear tu administrador -> verificar
+salud/carta/panel -> instalar Chromium -> suite completa sólo QA -> crear tu rama
+de tarea -> revisar docs/API/arquitectura y acordar el siguiente trabajo AWS.
+
+Documentos principales:
+  README.md
+  docs/EVA3-publicacion.md
+  docs/EVA3-estado-final.md (cierre operativo histórico, no datos vivos del autor)
+  docs/EVA3-react-admin.md
+  docs/EVA3-api.md
+  docs/EVA3-arquitectura.md
+  docs/EVA3-AWS.md
+  docs/EVA3-revision-final.md
+
+Nunca publiques contraseñas, .env reales, tokens, llaves, .aws, dumps, tmp,
+node_modules ni capturas con datos privados. El historial académico/seed no es
+autorización para adjuntar información particular de una instalación posterior.

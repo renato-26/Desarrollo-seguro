@@ -1,3 +1,5 @@
+> Documento histórico: describe una iteración anterior. El estado vigente, las pruebas y las restricciones de operación están en [EVA3-estado-final.md](EVA3-estado-final.md).
+
 # EVA 3 · Autenticación segura (iteración 3)
 
 Se incorporó inicio de sesión con hash Argon2id, cookie HTTP-only, token aleatorio de 256 bits (hash SHA-256 en PostgreSQL), tiempo de vida de 8 horas y revocación al cerrar sesión. Se impide crear sesiones para usuarios sin contraseña activada. El formulario conserva el diseño PHP original, pero opera sobre Express/PostgreSQL.

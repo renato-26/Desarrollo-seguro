@@ -1,0 +1,52 @@
+.public-session { gap: 12px; }
+.public-session .form-inline { gap: 8px; }
+.restaurant-switch { max-width: 320px; margin: 16px auto 0; }
+.restaurant-switch label { font-size: 13px; margin-bottom: 4px; }
+.react-featured-carousel { display: flex; gap: 30px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+.react-featured-carousel .featured-item { flex: 0 0 calc((100% - 60px)/3); scroll-snap-align: start; }
+.carousel-controls { display: flex; justify-content: flex-end; gap: 8px; padding-top: 6px; }
+.carousel-controls button { border: 1px solid #ddd; background: white; font-size: 24px; min-width: 36px; }
+.selection-modal { background: rgb(0 0 0 / 45%); }
+.nav-tabs button { cursor: pointer; background: transparent; }
+.button:disabled { opacity: .55; cursor: default; }
+.admin-app { min-height: 100vh; background: #f4f6f8; color: #263444; font-family: Arial, sans-serif; }
+.admin-app h1 { font-size: 28px; line-height: 1.25; overflow-wrap: anywhere; }
+.admin-topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 28px; background: #182c32; color: white; }
+.admin-topbar a { color: white; }
+.admin-brand { font-size: 22px; font-weight: 700; }
+.admin-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); min-height: calc(100vh - 76px); }
+.admin-sidebar { background: white; border-right: 1px solid #dce2e8; padding: 20px 14px; }
+.admin-sidebar a { display: block; padding: 12px; color: #33474c; border-radius: 5px; margin-bottom: 4px; }
+.admin-sidebar a[aria-current=page] { background: #e4f0ec; color: #175c4b; font-weight: 700; }
+.admin-content { padding: 28px; min-width: 0; }
+.admin-content h1 { font-size: 28px; margin-bottom: 8px; }
+.admin-panel { background: white; border: 1px solid #dce2e8; border-radius: 8px; padding: 22px; margin: 20px 0; }
+.admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.admin-list-toolbar { justify-content: space-between; }
+.admin-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.admin-field { display: flex; flex-direction: column; gap: 5px; margin: 0; }
+.admin-field input[type=checkbox] { align-self: start; width: 20px; height: 20px; }
+.admin-field select[multiple] { min-height: 130px; }
+.admin-field small { color: #63727d; }
+.admin-login { max-width: 440px; margin: 0 auto; padding: 60px 20px; }
+.admin-login-form { display: flex; flex-direction: column; gap: 12px; }
+.admin-app .btn-primary { background: #17664f; border-color: #17664f; }
+.admin-app .table { color: #263444; }
+.admin-app .table td { vertical-align: middle; }
+.admin-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 18px; margin-top: 24px; }
+.admin-metric { background: white; border: 1px solid #dce2e8; border-radius: 8px; padding: 24px; }
+.admin-metric strong { display: block; font-size: 32px; color: #17664f; }
+.admin-status { border-radius: 4px; padding: 3px 8px; display: inline-block; background: #e4f0ec; color: #175c4b; }
+.admin-status.inactive { background: #f5e7e7; color: #8d3636; }
+.admin-search { max-width: 360px; }
+@media (max-width: 1099px) { .react-featured-carousel .featured-item { flex-basis: calc((100% - 30px)/2); } }
+@media (max-width: 767px) {
+  .react-featured-carousel .featured-item { flex-basis: 100%; }
+  .public-session .form-control { max-width: 100%; }
+  .admin-layout { grid-template-columns: 1fr; }
+  .admin-sidebar { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px; }
+  .admin-sidebar a { padding: 9px; font-size: 14px; }
+  .admin-content { padding: 18px 12px; }
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-topbar { padding: 16px; }
+}

@@ -1,0 +1,44 @@
+# Prepared only. No database service, build, provisioning or automatic migrations.
+# Supply an immutable image, DATABASE_URL through the runtime secret mechanism,
+# and a readable AWS RDS CA bundle mounted from outside the repository.
+name: pnksecurity-production
+x-runtime: &runtime
+  image: ${APP_IMAGE:?Specify the exact image validated in QA}
+  environment:
+    APP_ENV: prod
+    NODE_ENV: production
+    PORT: "3000"
+    DATABASE_URL: ${DATABASE_URL:?Supply the RDS connection through runtime secrets}
+    DB_SSL: verify-full
+    NODE_EXTRA_CA_CERTS: /run/certs/rds-ca.pem
+  volumes:
+    - type: bind
+      source: ${RDS_CA_BUNDLE:?Specify an existing RDS CA bundle outside the repository}
+      target: /run/certs/rds-ca.pem
+      read_only: true
+      bind:
+        create_host_path: false
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+services:
+  backend:
+    <<: *runtime
+    init: true
+    restart: unless-stopped
+    # ALB requires a reachable private bind address and a restricted EC2 SG.
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  migrate:
+    <<: *runtime
+    profiles: [maintenance]
+    command: [node, database/run.js, migrate]
+    healthcheck:
+      disable: true

@@ -11,7 +11,10 @@ function validLogin(body) {
     && identifier.trim().length <= MAX_EMAIL_LENGTH
     && typeof password === 'string' && password.length > 0 && password.length <= 1024;
 }
-function publicUser(row) { return { id: row.id, nombre: row.nombre, email: row.email }; }
+function publicUser(row) {
+  return { id: row.id, nombre: row.nombre, email: row.email, rol: row.rol ?? 'CLIENTE',
+    activo: row.activo ?? true, restaurantes: row.restaurantes ?? [] };
+}
 function keyForAttempt(req, identifier) {
   return createHash('sha256').update(`${req.ip}|${identifier.toLowerCase()}`).digest('hex');
 }

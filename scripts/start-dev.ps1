@@ -11,6 +11,6 @@ docker compose up --build -d
 if ($LASTEXITCODE -ne 0) { throw 'No fue posible iniciar los contenedores' }
 docker compose run --rm migrate node database/run.js seed
 if ($LASTEXITCODE -ne 0) { throw 'No fue posible importar el seed' }
-Write-Host 'Frontend: http://localhost:3000'
-Write-Host 'API: http://localhost:3000/api/restaurantes'
-Write-Host 'Salud: http://localhost:3000/api/health'
+Write-Host 'Con la plantilla actual: http://127.0.0.1:3101/carta/1'
+Write-Host 'API: http://127.0.0.1:3101/api/restaurantes'
+Write-Host 'Salud: http://127.0.0.1:3101/api/health'

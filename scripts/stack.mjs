@@ -72,13 +72,14 @@ async function check(cfg) {
 }
 
 function usage() {
-  console.log(`Uso: node scripts/stack.mjs <comando> <ambiente>\n\nComandos:\n  up dev|qa|prod     Construir/iniciar y migrar; en DEV/QA aplicar seeds\n  seed dev|qa|prod   Aplicar seeds pendientes (PROD local solo explícitamente)\n  status dev|qa|prod Mostrar estados sin modificar\n  check dev|qa|prod  Probar salud HTTP y catálogo\n  down dev|qa|prod   Detener contenedores SIN eliminar volúmenes\n  test qa            Unitarias, integración contra QA Docker y E2E\n\nSolo Docker local. AWS y Cloudflare se configuran por separado.`);
+  console.log(`Uso: node scripts/stack.mjs <comando> <ambiente>\n\nComandos:\n  up dev|qa         Construir/iniciar, migrar y aplicar seeds locales\n  seed dev|qa|prod   Aplicar seeds pendientes (PROD local solo explícitamente)\n  status dev|qa|prod Mostrar estados sin modificar\n  check dev|qa|prod  Probar salud HTTP y catálogo\n  down dev|qa|prod   Detener contenedores SIN eliminar volúmenes\n  test qa            Unitarias, integración contra QA Docker y E2E\n\nPROD externo: compose.production.yaml con imagen validada y TLS.\nSolo Docker local. AWS y Cloudflare se configuran por separado.`);
 }
 
 async function main(argv) {
   const [action, name] = argv;
   if (!action || action === '--help' || !name) { usage(); if (action !== '--help') process.exitCode = 1; return; }
   if (!['up','seed','status','check','down','test'].includes(action)) throw new Error('Comando no admitido');
+  if (action === 'up' && name === 'prod') throw new Error('PROD requiere PostgreSQL externo con TLS: usar compose.production.yaml y una imagen validada en QA; no se inicia PostgreSQL local');
   const spec = environments[name];
   if (!spec) throw new Error('Ambiente inválido');
   if (action === 'test' && name !== 'qa') throw new Error('Las pruebas de integración solo están autorizadas en QA');
@@ -110,6 +111,7 @@ async function main(argv) {
     qaUrl.hostname = '127.0.0.1';
     qaUrl.port = String(spec.postgres);
     const testCfg = { ...cfg, env: { ...cfg.env, DATABASE_URL: qaUrl.href, EXPECT_DATABASE_UP: '1', E2E_PORT: '3401' } };
+    node({ ...testCfg, env: { ...testCfg.env, NODE_ENV: 'production' } }, 'node_modules/vite/bin/vite.js', 'build', '--config', 'frontend/vite.config.js');
     const unitTests = readdirSync(join(root, 'tests/unit'))
       .filter(n => n.endsWith('.test.js')).sort().map(n => `tests/unit/${n}`);
     node(testCfg, '--test', ...unitTests);
