@@ -1,0 +1,36 @@
+name: Publicar imagen inmutable en ECR
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/fullstack-mvc]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    # El equipo debe configurar variables de GitHub antes de activar AWS.
+    if: ${{ vars.AWS_ROLE_ARN != '' && vars.AWS_REGION != '' && vars.ECR_REPOSITORY != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Autenticarse en AWS mediante OIDC (sin access keys en GitHub)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Construir React + backend y publicar imagen con SHA Git
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        run: bash scripts/release/publish-ecr.sh | tee publication.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pnksecurity-release-${{ github.sha }}
+          path: publication.txt
+          retention-days: 30
